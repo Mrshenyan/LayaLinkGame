@@ -20,7 +20,7 @@ export default class CheckScript extends Laya.Script {
      * 1 for can elimiat
      */
     private static Check(sn1,sn2,type1,type2):any{
-        if(type1!=type2)return 0
+        if(type1!=type2&&(type1!=-1&&type2!=-1))return MainScene.MS_self.cancleChioced(sn1,sn2);
         if(sn1==-1||sn2==-1){
             return -1;
         }

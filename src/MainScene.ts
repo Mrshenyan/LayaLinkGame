@@ -1,5 +1,6 @@
 import CellScript from "./CellScript";
 import CheckScript from "./CheckScript";
+import { time } from "console";
 
 export default class MainScene extends Laya.Script {
     GemContain:Laya.Panel;
@@ -66,5 +67,20 @@ export default class MainScene extends Laya.Script {
             }
         }
         console.log("没有可以消除的");
+    }
+
+    cancleChioced(sn1,sn2){
+        console.log("can not eliminate");
+        let timer = new Laya.Timer();
+        timer.once(500,this,()=>{
+            let target1_img = <Laya.Image>MainScene.MS_self.gemS[sn1].getChildAt(0)//.destroy();
+            target1_img.visible = false;
+            let target2_img = <Laya.Image>MainScene.MS_self.gemS[sn2].getChildAt(0)//.destroy();
+            target2_img.visible = false;
+            timer.clear(this,()=>{
+                console.log("清除计时器");
+            });
+        })
+        CheckScript.reSet();
     }
 }

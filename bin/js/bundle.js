@@ -6,8 +6,8 @@
             super();
         }
         static Check(sn1, sn2, type1, type2) {
-            if (type1 != type2)
-                return 0;
+            if (type1 != type2 && (type1 != -1 && type2 != -1))
+                return MainScene.MS_self.cancleChioced(sn1, sn2);
             if (sn1 == -1 || sn2 == -1) {
                 return -1;
             }
@@ -143,6 +143,20 @@
                 }
             }
             console.log("没有可以消除的");
+        }
+        cancleChioced(sn1, sn2) {
+            console.log("can not eliminate");
+            let timer = new Laya.Timer();
+            timer.once(500, this, () => {
+                let target1_img = MainScene.MS_self.gemS[sn1].getChildAt(0);
+                target1_img.visible = false;
+                let target2_img = MainScene.MS_self.gemS[sn2].getChildAt(0);
+                target2_img.visible = false;
+                timer.clear(this, () => {
+                    console.log("清除计时器");
+                });
+            });
+            CheckScript.reSet();
         }
     }
     MainScene.MS_self = null;
