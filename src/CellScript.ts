@@ -1,4 +1,5 @@
 import CheckScript from "./CheckScript";
+import MainScene from "./MainScene";
 
 export default class CellScript extends Laya.Script {
     /** @prop {name:gemType,tips:"宝石的类型",type:Int,default:1} */
@@ -10,6 +11,7 @@ export default class CellScript extends Laya.Script {
     private gemSN:number = -1;
     constructor() { super(); }
     public static CS_self:CellScript = null;
+    private CellPos:Laya.Vector2// = new Laya.Vector2(-1,-1);
     onAwake():void{
         this.GemParent = this.owner.getChildByName("Panel");
         this.BtnClick = <Laya.Button>this.owner.getChildByName("btn_click");
@@ -37,6 +39,7 @@ export default class CellScript extends Laya.Script {
         this.chioced = <Laya.Image>this.owner.getChildByName("chioce");
         this.BtnClick = <Laya.Button>this.owner.getChildByName("btn_click");
         this.gemSN = sn;
+        // this.CellPos = new Laya.Vector2();
         for(let i=0;i<this.GemParent.numChildren;i++){
             this.gemS.push(<Laya.Image>this.GemParent.getChildAt(i));
         }
@@ -44,6 +47,7 @@ export default class CellScript extends Laya.Script {
         for(let i=0;i<this.gemS.length;i++){
             if((i+1)==this.gemType){
                 this.gemS[i].visible = true;
+                MainScene.MS_self.gemS.push(this.gemS[i]);
             }
         }
         this.BtnClick.clickHandler = new Laya.Handler(this,this.btnCallBack,[this.gemType,this.gemSN])
@@ -61,5 +65,13 @@ export default class CellScript extends Laya.Script {
         }
         EliminateReturnValue = CheckScript.eliminate(gemType,gemSN);
         console.log("EliminateReturnValue: ",EliminateReturnValue);
+    }
+
+    setCellPos(x,y){
+        this.CellPos.x = x;
+        this.CellPos.y = y;
+    }
+    getCellPos():Laya.Vector2{
+        return this.CellPos;
     }
 }

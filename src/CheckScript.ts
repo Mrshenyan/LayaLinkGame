@@ -25,6 +25,15 @@ export default class CheckScript extends Laya.Script {
             return -1;
         }
         return MainScene.eliminate(sn1,sn2);
+
+
+        function right(){
+            
+        }
+
+        function left(){
+
+        }
     }
     
     /**

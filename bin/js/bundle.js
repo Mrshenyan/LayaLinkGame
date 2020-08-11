@@ -12,6 +12,10 @@
                 return -1;
             }
             return MainScene.eliminate(sn1, sn2);
+            function right() {
+            }
+            function left() {
+            }
         }
         static eliminate(type, sn) {
             let returnValue = -1;
@@ -70,6 +74,7 @@
             for (let i = 0; i < this.gemS.length; i++) {
                 if ((i + 1) == this.gemType) {
                     this.gemS[i].visible = true;
+                    MainScene.MS_self.gemS.push(this.gemS[i]);
                 }
             }
             this.BtnClick.clickHandler = new Laya.Handler(this, this.btnCallBack, [this.gemType, this.gemSN]);
@@ -86,6 +91,13 @@
             }
             EliminateReturnValue = CheckScript.eliminate(gemType, gemSN);
             console.log("EliminateReturnValue: ", EliminateReturnValue);
+        }
+        setCellPos(x, y) {
+            this.CellPos.x = x;
+            this.CellPos.y = y;
+        }
+        getCellPos() {
+            return this.CellPos;
         }
     }
     CellScript.CS_self = null;
@@ -126,13 +138,16 @@
                     indexY += 1;
                 }
                 console.log("cell's pos: s", cell.x, cell.y);
-                MainScene.MS_self.gemS.push(cell);
                 this.GemContain.addChild(cell);
             }
         }
         static eliminate(sn1, sn2) {
-            MainScene.MS_self.gemS[sn1].destroy();
-            MainScene.MS_self.gemS[sn2].destroy();
+            MainScene.MS_self.gemS[sn1].visible = false;
+            MainScene.MS_self.gemS[sn2].visible = false;
+            let p1_chioced = MainScene.MS_self.gemS[sn1].parent.parent.parent.getChildAt(0);
+            let p2_chioced = MainScene.MS_self.gemS[sn2].parent.parent.parent.getChildAt(0);
+            p1_chioced.visible = false;
+            p2_chioced.visible = false;
             MainScene.remainCount -= 2;
             CheckScript.reSet();
             for (let i = 0; i < MainScene.MS_self.GemContain.numChildren - 1; i++) {
@@ -148,9 +163,9 @@
             console.log("can not eliminate");
             let timer = new Laya.Timer();
             timer.once(500, this, () => {
-                let target1_img = MainScene.MS_self.gemS[sn1].getChildAt(0);
+                let target1_img = MainScene.MS_self.gemS[sn1].parent.parent.parent.getChildAt(0);
                 target1_img.visible = false;
-                let target2_img = MainScene.MS_self.gemS[sn2].getChildAt(0);
+                let target2_img = MainScene.MS_self.gemS[sn2].parent.parent.parent.getChildAt(0);
                 target2_img.visible = false;
                 timer.clear(this, () => {
                     console.log("清除计时器");

@@ -9,7 +9,7 @@ export default class MainScene extends Laya.Script {
     private GameLV:number =3;
     constructor() { super(); }
     static MS_self:MainScene = null;
-    private gemS:Array<Laya.Image>;
+    public gemS:Array<Laya.Image>;
     private static remainCount = 0;
     onAwake():void{
         this.GemContain = <Laya.Panel>this.owner.getChildByName("GemContain");
@@ -41,22 +41,25 @@ export default class MainScene extends Laya.Script {
             cell.y = this.configY * indexY;
             cell.x = this.configX*indexX;
             cell.y = this.configY*indexY;
+            // cell.getComponent(CellScript).setCellPos(indexX,indexY);
             indexX++
             if(indexX>this.GameLV){
                 indexX=0;
                 indexY+=1;
             }
             console.log("cell's pos: s",cell.x,cell.y);
-            MainScene.MS_self.gemS.push(cell);
+            // MainScene.MS_self.gemS.push(cell);
             this.GemContain.addChild(cell);
         }
     }
     
     static eliminate(sn1:number,sn2:number){
-        // MainScene.MS_self.gemS[sn1].visible = false;
-        // MainScene.MS_self.gemS[sn2].visible = false;
-        MainScene.MS_self.gemS[sn1].destroy();
-        MainScene.MS_self.gemS[sn2].destroy();
+        MainScene.MS_self.gemS[sn1].visible = false;
+        MainScene.MS_self.gemS[sn2].visible = false;
+        let p1_chioced = <Laya.Image>MainScene.MS_self.gemS[sn1].parent.parent.parent.getChildAt(0);
+        let p2_chioced = <Laya.Image>MainScene.MS_self.gemS[sn2].parent.parent.parent.getChildAt(0);
+        p1_chioced.visible = false;
+        p2_chioced.visible = false;
         MainScene.remainCount-=2;
         CheckScript.reSet();
         for(let i=0;i<MainScene.MS_self.GemContain.numChildren-1;i++){
@@ -73,9 +76,9 @@ export default class MainScene extends Laya.Script {
         console.log("can not eliminate");
         let timer = new Laya.Timer();
         timer.once(500,this,()=>{
-            let target1_img = <Laya.Image>MainScene.MS_self.gemS[sn1].getChildAt(0)//.destroy();
+            let target1_img = <Laya.Image>MainScene.MS_self.gemS[sn1].parent.parent.parent.getChildAt(0)//.destroy();
             target1_img.visible = false;
-            let target2_img = <Laya.Image>MainScene.MS_self.gemS[sn2].getChildAt(0)//.destroy();
+            let target2_img = <Laya.Image>MainScene.MS_self.gemS[sn2].parent.parent.parent.getChildAt(0)//.destroy();
             target2_img.visible = false;
             timer.clear(this,()=>{
                 console.log("清除计时器");
