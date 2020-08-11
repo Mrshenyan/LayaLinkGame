@@ -1,0 +1,1 @@
+{"type":"Scene","props":{"width":640,"height":960},"compId":2,"child":[{"type":"Script","props":{"cellPrefab":"@Prefab:prefab/CellBg.prefab","GemContain":"@node:6","runtime":"MainScene.ts"},"compId":3},{"type":"Panel","props":{"y":280,"x":120,"width":400,"name":"GemContain","height":400},"compId":6}],"loadList":["prefab/CellBg.prefab"],"loadList3D":[]}

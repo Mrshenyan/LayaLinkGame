@@ -38,6 +38,13 @@ P 0587871F vscroll$up.png
 P 5FD17798 vscroll.png
 P DDDDFB9E vslider$bar.png
 P 01BAE7F5 vslider.png
+D LinkGame
+P E53F815D 1.png
+P 3DAB06B1 2.png
+P F78F0808 3.png
+P 216857DE 4.png
+P FCCF5C72 img_Cell_01.png
+P 2B35E036 img_Cell_02.png
 D sound
 R 1DC3ABD8 destroy.wav
 R FF0B6E8D hit.wav

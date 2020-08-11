@@ -3,6 +3,16 @@ import View=Laya.View;
 import Dialog=Laya.Dialog;
 import Scene=Laya.Scene;
 var REG: Function = Laya.ClassUtils.regClass;
+export module ui {
+    export class MainSceneUI extends Scene {
+        constructor(){ super()}
+        createChildren():void {
+            super.createChildren();
+            this.loadScene("MainScene");
+        }
+    }
+    REG("ui.MainSceneUI",MainSceneUI);
+}
 export module ui.test {
     export class TestSceneUI extends Scene {
 		public scoreLbl:Laya.Label;
