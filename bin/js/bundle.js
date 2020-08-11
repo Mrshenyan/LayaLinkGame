@@ -1,13 +1,52 @@
 (function () {
     'use strict';
 
+    class CheckScript extends Laya.Script {
+        constructor() {
+            super();
+        }
+        static Check(sn1, sn2, type1, type2) {
+            if (type1 != type2)
+                return 0;
+            if (sn1 == -1 || sn2 == -1) {
+                return -1;
+            }
+            return MainScene.eliminate(sn1, sn2);
+        }
+        static eliminate(type, sn) {
+            let returnValue = -1;
+            if (this.theOne == -1) {
+                this.theOne = sn;
+                this.type1 = type;
+            }
+            else {
+                this.theTwo = sn;
+                this.type2 = type;
+            }
+            returnValue = this.Check(this.theOne, this.theTwo, this.type1, this.type2);
+            return returnValue;
+        }
+        static reSet() {
+            this.theOne = -1;
+            this.theTwo = -1;
+            this.type1 = -1;
+            this.type2 = -1;
+        }
+    }
+    CheckScript.theOne = -1;
+    CheckScript.theTwo = -1;
+    CheckScript.type1 = -1;
+    CheckScript.type2 = -1;
+
     class CellScript extends Laya.Script {
         constructor() {
             super();
             this.gemType = 1;
+            this.gemSN = -1;
         }
         onAwake() {
             this.GemParent = this.owner.getChildByName("Panel");
+            this.BtnClick = this.owner.getChildByName("btn_click");
             for (let i = 0; i < this.GemParent.numChildren; i++) {
                 this.gemS.push(this.GemParent.getChildAt(i));
             }
@@ -16,10 +55,14 @@
         }
         onDisable() {
         }
-        Init() {
+        Init(sn) {
             let self = this;
+            CellScript.CS_self = this;
             this.GemParent = this.owner.getChildByName("Panel");
             this.gemS = new Array();
+            this.chioced = this.owner.getChildByName("chioce");
+            this.BtnClick = this.owner.getChildByName("btn_click");
+            this.gemSN = sn;
             for (let i = 0; i < this.GemParent.numChildren; i++) {
                 this.gemS.push(this.GemParent.getChildAt(i));
             }
@@ -29,10 +72,23 @@
                     this.gemS[i].visible = true;
                 }
             }
+            this.BtnClick.clickHandler = new Laya.Handler(this, this.btnCallBack, [this.gemType, this.gemSN]);
             console.log("输出生成的宝石类型：", this.gemType);
             return this.owner;
         }
+        btnCallBack(gemType, gemSN) {
+            let EliminateReturnValue = -1;
+            this.chioced.visible = !this.chioced.visible;
+            console.log("you clicked gem's clickData is : ", gemType, gemSN);
+            if (!this.chioced.visible) {
+                CheckScript.reSet();
+                return;
+            }
+            EliminateReturnValue = CheckScript.eliminate(gemType, gemSN);
+            console.log("EliminateReturnValue: ", EliminateReturnValue);
+        }
     }
+    CellScript.CS_self = null;
 
     class MainScene extends Laya.Script {
         constructor() {
@@ -43,6 +99,8 @@
         }
         onAwake() {
             this.GemContain = this.owner.getChildByName("GemContain");
+            MainScene.MS_self = this;
+            MainScene.MS_self.gemS = new Array();
             this.cretatGem();
         }
         onEnable() {
@@ -50,17 +108,45 @@
         onDisable() {
         }
         cretatGem() {
-            let cells = Math.pow((this.GameLV + 1), 2);
+            let cells = MainScene.remainCount = Math.pow((this.GameLV + 1), 2);
             let cell = null;
+            this.GemContain;
+            let indexX = 0;
+            let indexY = 0;
             for (let i = 0; i < cells; i++) {
                 cell = Laya.Pool.getItemByCreateFun("cellPrefab", this.cellPrefab.create, this.cellPrefab);
-                cell.getComponent(CellScript).Init();
-                cell.x = this.configX * i;
-                cell.y = this.configY * i;
+                cell.getComponent(CellScript).Init(i);
+                cell.x = this.configX * indexX;
+                cell.y = this.configY * indexY;
+                cell.x = this.configX * indexX;
+                cell.y = this.configY * indexY;
+                indexX++;
+                if (indexX > this.GameLV) {
+                    indexX = 0;
+                    indexY += 1;
+                }
+                console.log("cell's pos: s", cell.x, cell.y);
+                MainScene.MS_self.gemS.push(cell);
                 this.GemContain.addChild(cell);
             }
         }
+        static eliminate(sn1, sn2) {
+            MainScene.MS_self.gemS[sn1].destroy();
+            MainScene.MS_self.gemS[sn2].destroy();
+            MainScene.remainCount -= 2;
+            CheckScript.reSet();
+            for (let i = 0; i < MainScene.MS_self.GemContain.numChildren - 1; i++) {
+                for (let j = i + 1; j < MainScene.MS_self.GemContain.numChildren; j++) {
+                    if (MainScene.MS_self.GemContain.getChildAt(i).getComponent(CellScript).gemType == MainScene.MS_self.GemContain.getChildAt(j).getComponent(CellScript).gemType) {
+                        return;
+                    }
+                }
+            }
+            console.log("没有可以消除的");
+        }
     }
+    MainScene.MS_self = null;
+    MainScene.remainCount = 0;
 
     var Scene = Laya.Scene;
     var REG = Laya.ClassUtils.regClass;
