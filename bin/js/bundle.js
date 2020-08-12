@@ -4,49 +4,158 @@
     class CheckScript extends Laya.Script {
         constructor() {
             super();
+            if (!CheckScript.Instance)
+                CheckScript.Instance = new CheckScript();
+            CheckScript.CS_self = this;
         }
-        static Check(sn1, sn2, type1, type2) {
+        static Check(sn1, sn2, type1, type2, pos1, pos2) {
+            let target1 = MainScene.MS_self.GemContain.getChildAt((pos1.x + 1) * (pos1.y + 1));
+            let target2 = MainScene.MS_self.GemContain.getChildAt((pos2.x + 1) * (pos2.y + 1));
             if (type1 != type2 && (type1 != -1 && type2 != -1))
                 return MainScene.MS_self.cancleChioced(sn1, sn2);
             if (sn1 == -1 || sn2 == -1) {
                 return -1;
             }
-            return MainScene.eliminate(sn1, sn2);
-            function right() {
+            if (pos2.x == pos1.x) {
+                return Horizon(target1, target2, pos1, pos2, true);
             }
-            function left() {
+            if (pos2.y == pos1.y) {
+                return Vertical(target1, target2, pos1, pos2, true);
+            }
+            turn_once(target1, target2, pos1, pos2);
+            function Horizon(target1, target2, pos1, pos2, eli) {
+                if (Math.abs(pos1.x - pos2.x) == 1 || Math.abs(pos2.y - pos1.y) == 1)
+                    return MainScene.eliminate(sn1, sn2);
+                let node = new Laya.Node();
+                if (pos1.y < pos2.y) {
+                    for (let i = 1; i < (pos2.y - pos1.y); i++) {
+                        node = MainScene.MS_self.GemContain.getChildAt(pos1.x * (MainScene.MS_self.getGameLv() + 1 + 2) + pos1.y + i);
+                        if (!node.getComponent(CellScript).getEliminateOrNot()) {
+                            console.log("不能够消除1");
+                            return MainScene.MS_self.cancleChioced(sn1, sn2);
+                        }
+                        else if (eli) {
+                            return MainScene.eliminate(sn1, sn2);
+                        }
+                        return true;
+                    }
+                }
+                else {
+                    for (let i = 1; i < (pos1.y - pos2.y); i++) {
+                        node = MainScene.MS_self.GemContain.getChildAt(pos1.x * (MainScene.MS_self.getGameLv() + 1 + 2) + pos1.y - i);
+                        if (!node.getComponent(CellScript).getEliminateOrNot()) {
+                            console.log("不能够消除2");
+                            return MainScene.MS_self.cancleChioced(sn1, sn2);
+                        }
+                        else if (eli) {
+                            return MainScene.eliminate(sn1, sn2);
+                        }
+                        return true;
+                    }
+                }
+            }
+            function Vertical(target1, target2, pos1, pos2, eli) {
+                if (Math.abs(pos1.x - pos2.x) == 1 || Math.abs(pos2.y - pos1.y) == 1)
+                    return MainScene.eliminate(sn1, sn2);
+                let node = new Laya.Node();
+                if (pos1.x < pos2.x) {
+                    for (let i = 1; i < (pos2.x - pos1.x); i++) {
+                        node = MainScene.MS_self.GemContain.getChildAt((pos1.x + i) * (MainScene.MS_self.getGameLv() + 1 + 2) + pos1.y);
+                        if (!node.getComponent(CellScript).getEliminateOrNot()) {
+                            console.log("不能够消除3");
+                            return MainScene.MS_self.cancleChioced(sn1, sn2);
+                        }
+                        else if (eli) {
+                            return MainScene.eliminate(sn1, sn2);
+                        }
+                        return true;
+                    }
+                }
+                else {
+                    for (let i = 1; i < (pos1.x - pos2.x); i++) {
+                        node = MainScene.MS_self.GemContain.getChildAt((pos1.x - i) * (MainScene.MS_self.getGameLv() + 1 + 2) + pos1.y);
+                        if (!node.getComponent(CellScript).getEliminateOrNot()) {
+                            console.log("不能够消除4");
+                            return MainScene.MS_self.cancleChioced(sn1, sn2);
+                        }
+                        else if (eli) {
+                            return MainScene.eliminate(sn1, sn2);
+                        }
+                        return true;
+                    }
+                }
+            }
+            function turn_once(target1, target2, pos1, pos2) {
+                console.log("进入有拐点的情况");
+                let pos3 = new Laya.Vector2(pos1.x, pos2.y);
+                let pos4 = new Laya.Vector2(pos2.x, pos1.y);
+                let target3 = MainScene.MS_self.GemContain.getChildAt((pos3.x + 1) * MainScene.MS_self.getGameLv() + pos3.y);
+                let target4 = MainScene.MS_self.GemContain.getChildAt((pos4.x + 1) * MainScene.MS_self.getGameLv() + pos4.y);
+                if (Horizon(target1, target3, pos1, pos3, false) && Vertical(target3, target2, pos3, pos2, false)) {
+                    return MainScene.eliminate(sn1, sn2);
+                }
+                if (Horizon(target2, target4, pos2, pos4, false) && Vertical(target4, target1, pos4, pos1, false)) {
+                    return MainScene.eliminate(sn1, sn2);
+                }
+                return false;
+            }
+            function turn_twice(target1, target2, pos1, pos2) {
+                return false;
             }
         }
-        static eliminate(type, sn) {
+        static eliminate(type, sn, pos) {
             let returnValue = -1;
             if (this.theOne == -1) {
                 this.theOne = sn;
                 this.type1 = type;
+                this.pos1 = pos;
             }
             else {
                 this.theTwo = sn;
                 this.type2 = type;
+                this.pos2 = pos;
             }
-            returnValue = this.Check(this.theOne, this.theTwo, this.type1, this.type2);
+            returnValue = this.Check(this.theOne, this.theTwo, this.type1, this.type2, this.pos1, this.pos2);
             return returnValue;
         }
         static reSet() {
-            this.theOne = -1;
-            this.theTwo = -1;
-            this.type1 = -1;
-            this.type2 = -1;
+            this.theOne = this.theTwo = this.type1 = this.type2 = -1;
+            this.pos1 = this.pos2 = new Laya.Vector2(-1, -1);
         }
     }
     CheckScript.theOne = -1;
     CheckScript.theTwo = -1;
     CheckScript.type1 = -1;
     CheckScript.type2 = -1;
+    CheckScript.pos1 = new Laya.Vector2(-1, -1);
+    CheckScript.pos2 = new Laya.Vector2(-1, -1);
+    CheckScript.Instance = null;
+    CheckScript.CS_self = null;
 
     class CellScript extends Laya.Script {
         constructor() {
             super();
             this.gemType = 1;
             this.gemSN = -1;
+            this.CellPos = new Laya.Vector2(-1, -1);
+            this.EliminateOrNot = false;
+        }
+        setCellPos(x, y) {
+            this.CellPos.y = x;
+            this.CellPos.x = y;
+            console.log(this.CellPos);
+        }
+        getCellPos() {
+            return this.CellPos;
+        }
+        getGemSn() {
+            return this.gemSN;
+        }
+        getEliminateOrNot() {
+            return this.EliminateOrNot;
+        }
+        setEliminateOrNot(v) {
+            this.EliminateOrNot = v;
         }
         onAwake() {
             this.GemParent = this.owner.getChildByName("Panel");
@@ -84,20 +193,13 @@
         btnCallBack(gemType, gemSN) {
             let EliminateReturnValue = -1;
             this.chioced.visible = !this.chioced.visible;
-            console.log("you clicked gem's clickData is : ", gemType, gemSN);
+            console.log("you clicked gem's clickData is : ", gemType, gemSN, this.CellPos);
             if (!this.chioced.visible) {
                 CheckScript.reSet();
                 return;
             }
-            EliminateReturnValue = CheckScript.eliminate(gemType, gemSN);
+            EliminateReturnValue = CheckScript.eliminate(gemType, gemSN, this.CellPos);
             console.log("EliminateReturnValue: ", EliminateReturnValue);
-        }
-        setCellPos(x, y) {
-            this.CellPos.x = x;
-            this.CellPos.y = y;
-        }
-        getCellPos() {
-            return this.CellPos;
         }
     }
     CellScript.CS_self = null;
@@ -119,8 +221,11 @@
         }
         onDisable() {
         }
+        getGameLv() {
+            return this.GameLV;
+        }
         cretatGem() {
-            let cells = MainScene.remainCount = Math.pow((this.GameLV + 1), 2);
+            let cells = MainScene.remainCount = Math.pow((this.GameLV + 1 + 2), 2);
             let cell = null;
             this.GemContain;
             let indexX = 0;
@@ -130,12 +235,13 @@
                 cell.getComponent(CellScript).Init(i);
                 cell.x = this.configX * indexX;
                 cell.y = this.configY * indexY;
-                cell.x = this.configX * indexX;
-                cell.y = this.configY * indexY;
-                indexX++;
-                if (indexX > this.GameLV) {
-                    indexX = 0;
-                    indexY += 1;
+                cell.getComponent(CellScript).setCellPos(indexX, indexY);
+                if (indexX == 0 || indexX == this.GameLV + 2 || indexY == 0 || indexY == this.GameLV + 2) {
+                }
+                indexY++;
+                if (indexY > this.GameLV + 2) {
+                    indexY = 0;
+                    indexX += 1;
                 }
                 console.log("cell's pos: s", cell.x, cell.y);
                 this.GemContain.addChild(cell);
@@ -144,16 +250,26 @@
         static eliminate(sn1, sn2) {
             MainScene.MS_self.gemS[sn1].visible = false;
             MainScene.MS_self.gemS[sn2].visible = false;
-            let p1_chioced = MainScene.MS_self.gemS[sn1].parent.parent.parent.getChildAt(0);
-            let p2_chioced = MainScene.MS_self.gemS[sn2].parent.parent.parent.getChildAt(0);
+            let p1_Rootpraent = MainScene.MS_self.gemS[sn1].parent.parent.parent;
+            let p2_Rootpraent = MainScene.MS_self.gemS[sn2].parent.parent.parent;
+            let p1_chioced = p1_Rootpraent.getChildAt(0);
+            let p2_chioced = p2_Rootpraent.getChildAt(0);
+            p1_Rootpraent.getComponent(CellScript).setEliminateOrNot(true);
+            p2_Rootpraent.getComponent(CellScript).setEliminateOrNot(true);
             p1_chioced.visible = false;
             p2_chioced.visible = false;
             MainScene.remainCount -= 2;
             CheckScript.reSet();
             for (let i = 0; i < MainScene.MS_self.GemContain.numChildren - 1; i++) {
                 for (let j = i + 1; j < MainScene.MS_self.GemContain.numChildren; j++) {
-                    if (MainScene.MS_self.GemContain.getChildAt(i).getComponent(CellScript).gemType == MainScene.MS_self.GemContain.getChildAt(j).getComponent(CellScript).gemType) {
-                        return;
+                    let imgI = MainScene.MS_self.GemContain.getChildAt(i);
+                    let imgJ = MainScene.MS_self.GemContain.getChildAt(j);
+                    let gemI = MainScene.MS_self.gemS[i];
+                    let gemJ = MainScene.MS_self.gemS[j];
+                    if (imgI.visible && imgJ.visible && gemI.visible && gemJ.visible) {
+                        if (imgI.getComponent(CellScript).gemType == imgJ.getComponent(CellScript).gemType) {
+                            return;
+                        }
                     }
                 }
             }

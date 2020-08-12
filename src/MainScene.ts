@@ -25,27 +25,31 @@ export default class MainScene extends Laya.Script {
     onDisable(): void {
     }
 
+    getGameLv(){
+        return this.GameLV;
+    }
+
     configX = 100;
     configY = 100;
     cretatGem(){
-        let cells:number = MainScene.remainCount = Math.pow((this.GameLV+1),2);
+        let cells:number = MainScene.remainCount = Math.pow((this.GameLV+1+2),2);
         let cell:Laya.Image = null;
         this.GemContain
         let indexX = 0;
         let indexY = 0;
         for(let i=0;i<cells;i++){
             cell = Laya.Pool.getItemByCreateFun("cellPrefab",this.cellPrefab.create,this.cellPrefab);
-            
             cell.getComponent(CellScript).Init(i);
             cell.x = this.configX * indexX;
             cell.y = this.configY * indexY;
-            cell.x = this.configX*indexX;
-            cell.y = this.configY*indexY;
-            // cell.getComponent(CellScript).setCellPos(indexX,indexY);
-            indexX++
-            if(indexX>this.GameLV){
-                indexX=0;
-                indexY+=1;
+            cell.getComponent(CellScript).setCellPos(indexX,indexY);
+            if(indexX==0||indexX==this.GameLV+2||indexY==0||indexY==this.GameLV+2){
+                // cell.visible = false;
+            }
+            indexY++;
+            if(indexY>this.GameLV+2){
+                indexY=0;
+                indexX+=1;
             }
             console.log("cell's pos: s",cell.x,cell.y);
             // MainScene.MS_self.gemS.push(cell);
@@ -56,16 +60,26 @@ export default class MainScene extends Laya.Script {
     static eliminate(sn1:number,sn2:number){
         MainScene.MS_self.gemS[sn1].visible = false;
         MainScene.MS_self.gemS[sn2].visible = false;
-        let p1_chioced = <Laya.Image>MainScene.MS_self.gemS[sn1].parent.parent.parent.getChildAt(0);
-        let p2_chioced = <Laya.Image>MainScene.MS_self.gemS[sn2].parent.parent.parent.getChildAt(0);
+        let p1_Rootpraent = MainScene.MS_self.gemS[sn1].parent.parent.parent
+        let p2_Rootpraent = MainScene.MS_self.gemS[sn2].parent.parent.parent
+        let p1_chioced = <Laya.Image>p1_Rootpraent.getChildAt(0);
+        let p2_chioced = <Laya.Image>p2_Rootpraent.getChildAt(0);
+        p1_Rootpraent.getComponent(CellScript).setEliminateOrNot(true);
+        p2_Rootpraent.getComponent(CellScript).setEliminateOrNot(true);
         p1_chioced.visible = false;
         p2_chioced.visible = false;
         MainScene.remainCount-=2;
         CheckScript.reSet();
         for(let i=0;i<MainScene.MS_self.GemContain.numChildren-1;i++){
             for(let j=i+1;j<MainScene.MS_self.GemContain.numChildren;j++){
-                if(MainScene.MS_self.GemContain.getChildAt(i).getComponent(CellScript).gemType==MainScene.MS_self.GemContain.getChildAt(j).getComponent(CellScript).gemType){
-                    return
+                let imgI = <Laya.Image>MainScene.MS_self.GemContain.getChildAt(i);
+                let imgJ = <Laya.Image>MainScene.MS_self.GemContain.getChildAt(j);
+                let gemI = <Laya.Image>MainScene.MS_self.gemS[i];
+                let gemJ = <Laya.Image>MainScene.MS_self.gemS[j];
+                if(imgI.visible&&imgJ.visible&&gemI.visible&&gemJ.visible){
+                    if(imgI.getComponent(CellScript).gemType==imgJ.getComponent(CellScript).gemType){
+                        return
+                    }
                 }
             }
         }

@@ -35,7 +35,7 @@
             "x":15,
             "type":"Panel",
             "searchKey":"Panel,GemContain",
-            "props":{"y":280,"x":120,"width":400,"name":"GemContain","height":400},
+            "props":{"y":160,"x":0,"width":640,"name":"GemContain","height":640},
             "nodeParent":2,
             "label":"GemContain",
             "isDirectory":false,
