@@ -13,9 +13,9 @@ export default class CellScript extends Laya.Script {
     public static CS_self:CellScript = null;
     private CellPos:Laya.Vector2 = new Laya.Vector2(-1,-1);
     setCellPos(x:number,y:number){
-        this.CellPos.y = x;
-        this.CellPos.x = y;
-        console.log(this.CellPos);
+        this.CellPos.x = x;
+        this.CellPos.y = y;
+        console.log("cellpos: ",this.CellPos.x,this.CellPos.y);
     }
     getCellPos():Laya.Vector2{
         return this.CellPos;
@@ -49,7 +49,7 @@ export default class CellScript extends Laya.Script {
      * 初始化游戏区域
      * @param sn the gem's sn
      */
-    public Init(sn:number):Laya.Node{
+    public Init(sn:number,indexX,indexY):Laya.Node{
         let self = this;
         CellScript.CS_self = this;
         this.GemParent = this.owner.getChildByName("Panel");
@@ -57,6 +57,7 @@ export default class CellScript extends Laya.Script {
         this.chioced = <Laya.Image>this.owner.getChildByName("chioce");
         this.BtnClick = <Laya.Button>this.owner.getChildByName("btn_click");
         this.gemSN = sn;
+        console.log("23123123123:   ",this.gemSN);
         for(let i=0;i<this.GemParent.numChildren;i++){
             this.gemS.push(<Laya.Image>this.GemParent.getChildAt(i));
         }
@@ -67,16 +68,21 @@ export default class CellScript extends Laya.Script {
                 MainScene.MS_self.gemS.push(this.gemS[i]);
             }
         }
+        this.setCellPos(indexX,indexY);
         this.BtnClick.clickHandler = new Laya.Handler(this,this.btnCallBack,[this.gemType,this.gemSN])
         console.log("输出生成的宝石类型：",this.gemType);
+        console.log("cellpos: ",this.CellPos.x,this.CellPos.y);
         
         return this.owner;
     }
 
     btnCallBack(gemType,gemSN){
+        if(this.getEliminateOrNot()){
+            return;
+        }
         let EliminateReturnValue = -1;
         this.chioced.visible=!this.chioced.visible;
-        console.log("you clicked gem's clickData is : ",gemType,gemSN,this.CellPos);
+        console.log("cellpos           : ",this.getCellPos(),gemSN);
         if(!this.chioced.visible){
             CheckScript.reSet();
             return;
