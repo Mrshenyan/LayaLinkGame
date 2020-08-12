@@ -20,20 +20,22 @@
                 return -1;
             }
             if (pos2.x == pos1.x) {
-                goCheck = Horizon(target1, target2, pos1, pos2, true);
+                Horizon(target1, target2, pos1, pos2, true);
             }
             if (pos2.y == pos1.y) {
-                goCheck = Vertical(target1, target2, pos1, pos2, true);
+                Vertical(target1, target2, pos1, pos2, true);
             }
             if (!goCheck) {
-                goCheck = turn_once(target1, target2, pos1, pos2);
+                turn_once(target1, target2, pos1, pos2);
             }
             if (!goCheck) {
                 turn_twice(target1, target2, pos1, pos2);
             }
             function Horizon(target1, target2, pos1, pos2, eli) {
-                if (Math.abs(pos1.x - pos2.x) == 1 || Math.abs(pos2.y - pos1.y) == 1)
+                if (Math.abs(pos1.x - pos2.x) == 1 || Math.abs(pos2.y - pos1.y) == 1) {
+                    goCheck = true;
                     return MainScene.eliminate(sn1, sn2);
+                }
                 let node = new Laya.Node();
                 let minus = pos2.y > pos1.y ? 0 : -1;
                 for (let i = 1; i < Math.abs(pos1.y - pos2.y); i++) {
@@ -45,14 +47,17 @@
                             return false;
                     }
                     else if (eli) {
+                        goCheck = true;
                         return MainScene.eliminate(sn1, sn2);
                     }
                     return false;
                 }
             }
             function Vertical(target1, target2, pos1, pos2, eli) {
-                if (Math.abs(pos1.x - pos2.x) == 1 || Math.abs(pos2.y - pos1.y) == 1)
+                if (Math.abs(pos1.x - pos2.x) == 1 || Math.abs(pos2.y - pos1.y) == 1) {
+                    goCheck = true;
                     return MainScene.eliminate(sn1, sn2);
+                }
                 let node = new Laya.Node();
                 let minus = pos2.x > pos1.x ? 0 : -1;
                 for (let i = 1; i < Math.abs(pos2.x - pos1.x); i++) {
@@ -64,6 +69,7 @@
                             return false;
                     }
                     else if (eli) {
+                        goCheck = true;
                         return MainScene.eliminate(sn1, sn2);
                     }
                     return false;
@@ -87,7 +93,34 @@
             }
             function turn_twice(target1, target2, pos1, pos2) {
                 console.log("进入有2个拐点的情况");
+                let t1Nodes = new Array();
+                let t2Nodes = new Array();
+                getArrondNodes(target1, t1Nodes);
+                getArrondNodes(target2, t2Nodes);
                 return false;
+                function getArrondNodes(target, nodes) {
+                    if (target.getComponent(CellScript).getGemSn() - (MainScene.MS_self.getGameLv() + 1 + 2) > 0) {
+                        nodes.push(MainScene.MS_self.GemContain.getChildAt(target.getComponent(CellScript).getGemSn() - MainScene.MS_self.getGameLv()));
+                    }
+                    if (target.getComponent(CellScript).getGemSn() + (MainScene.MS_self.getGameLv() + 1 + 2) < Math.pow((MainScene.MS_self.getGameLv() + 1 + 2), 2)) {
+                        nodes.push(MainScene.MS_self.GemContain.getChildAt(target.getComponent(CellScript).getGemSn() + MainScene.MS_self.getGameLv()));
+                    }
+                    let targetCellSn = target.getComponent(CellScript).getGemSn();
+                    let cellSn_L = new Laya.Vector2();
+                    cellSn_L.x = targetCellSn.x - 1;
+                    cellSn_L.y = targetCellSn.y;
+                    if (cellSn_L.x < 0) {
+                        nodes.push(null);
+                    }
+                    nodes.push(MainScene.MS_self.GemContain.getChildAt((cellSn_L.x + 1) * (cellSn_L.y + 1)));
+                    let cellSn_R = new Laya.Vector2();
+                    cellSn_R.x = targetCellSn.x + 1;
+                    cellSn_R.y = targetCellSn.y;
+                    if (cellSn_R.x > (MainScene.MS_self.getGameLv() + 1 + 2)) {
+                        nodes.push(null);
+                    }
+                    nodes.push(MainScene.MS_self.GemContain.getChildAt((cellSn_R.x + 1) * (cellSn_R.y + 1)));
+                }
             }
         }
         static eliminate(type, sn, pos) {

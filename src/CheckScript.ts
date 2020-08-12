@@ -37,13 +37,13 @@ export default class CheckScript extends Laya.Script {
             return -1;
         }
         if(pos2.x == pos1.x){
-            goCheck = Horizon(target1,target2,pos1,pos2,true);
+            Horizon(target1,target2,pos1,pos2,true);
         }
         if(pos2.y == pos1.y){
-            goCheck = Vertical(target1,target2,pos1,pos2,true);
+            Vertical(target1,target2,pos1,pos2,true);
         }
         if(!goCheck){
-            goCheck = turn_once(target1,target2,pos1,pos2);
+            turn_once(target1,target2,pos1,pos2);
         }
         if(!goCheck){
             turn_twice(target1,target2,pos1,pos2);
@@ -57,7 +57,10 @@ export default class CheckScript extends Laya.Script {
          * @param eli there are knee point or not
          */
         function Horizon(target1:Laya.Node,target2:Laya.Node,pos1,pos2,eli:boolean):any{
-            if(Math.abs(pos1.x-pos2.x)==1||Math.abs(pos2.y-pos1.y)==1) return MainScene.eliminate(sn1,sn2);//相邻的情况
+            if(Math.abs(pos1.x-pos2.x)==1||Math.abs(pos2.y-pos1.y)==1){
+                goCheck = true;
+                return MainScene.eliminate(sn1,sn2);//相邻的情况
+            }
             let node = new Laya.Node();
             let minus = pos2.y>pos1.y?0:-1;
             for(let i=1;i<Math.abs(pos1.y-pos2.y);i++){
@@ -67,6 +70,7 @@ export default class CheckScript extends Laya.Script {
                     console.log("不能够消除1");
                     if(eli)return false;
                 }else if(eli){
+                    goCheck = true;
                     return MainScene.eliminate(sn1,sn2);
                 }
                 return false;
@@ -82,7 +86,10 @@ export default class CheckScript extends Laya.Script {
          * @param eli there are knee point or not
          */
         function Vertical(target1:Laya.Node,target2:Laya.Node,pos1,pos2,eli:boolean):any{
-            if(Math.abs(pos1.x-pos2.x)==1||Math.abs(pos2.y-pos1.y)==1) return MainScene.eliminate(sn1,sn2);//相邻的情况
+            if(Math.abs(pos1.x-pos2.x)==1||Math.abs(pos2.y-pos1.y)==1){
+                goCheck = true;
+                return MainScene.eliminate(sn1,sn2);//相邻的情况
+            }
             let node = new Laya.Node();
             let minus = pos2.x>pos1.x?0:-1;
             for(let i=1;i<Math.abs(pos2.x-pos1.x);i++){
@@ -92,6 +99,7 @@ export default class CheckScript extends Laya.Script {
                     console.log("不能够消除3");
                     if(eli)return false;
                 }else if(eli){
+                    goCheck = true;
                     return MainScene.eliminate(sn1,sn2);
                 }
                 return false;
@@ -132,7 +140,41 @@ export default class CheckScript extends Laya.Script {
          */
         function turn_twice(target1:Laya.Node,target2:Laya.Node,pos1,pos2){
             console.log("进入有2个拐点的情况");
+            let t1Nodes:Array<Laya.Node> = new Array<Laya.Node>();//target1的上下左右
+            let t2Nodes:Array<Laya.Node> = new Array<Laya.Node>();//target2的上下左右
+            getArrondNodes(target1,t1Nodes);
+            getArrondNodes(target2,t2Nodes);
             return false;
+
+            /**
+             * 
+             * @param target 目标点
+             * @param nodes 周围点集合
+             */
+            function getArrondNodes(target,nodes:Array<Laya.Node>){//获取target附近的点
+                if(target.getComponent(CellScript).getGemSn()-(MainScene.MS_self.getGameLv()+1+2)>0){
+                    nodes.push(MainScene.MS_self.GemContain.getChildAt(target.getComponent(CellScript).getGemSn()-MainScene.MS_self.getGameLv()));
+                }
+                if(target.getComponent(CellScript).getGemSn()+(MainScene.MS_self.getGameLv()+1+2)<Math.pow((MainScene.MS_self.getGameLv()+1+2),2)){
+                    nodes.push(MainScene.MS_self.GemContain.getChildAt(target.getComponent(CellScript).getGemSn()+MainScene.MS_self.getGameLv()));
+                }
+                let targetCellSn:Laya.Vector2 = target.getComponent(CellScript).getGemSn();
+                let cellSn_L:Laya.Vector2 = new Laya.Vector2()
+                cellSn_L.x = targetCellSn.x-1;
+                cellSn_L.y = targetCellSn.y;
+                if(cellSn_L.x<0){
+                    nodes.push(null);
+                }
+                nodes.push(MainScene.MS_self.GemContain.getChildAt((cellSn_L.x+1)*(cellSn_L.y+1)));
+
+                let cellSn_R:Laya.Vector2 = new Laya.Vector2()
+                cellSn_R.x = targetCellSn.x +1;
+                cellSn_R.y = targetCellSn.y;
+                if(cellSn_R.x>(MainScene.MS_self.getGameLv()+1+2)){
+                    nodes.push(null);
+                }
+                nodes.push(MainScene.MS_self.GemContain.getChildAt((cellSn_R.x+1)*(cellSn_R.y+1)));
+            }
         }
     }
 
