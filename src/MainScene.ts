@@ -32,7 +32,6 @@ export default class MainScene extends Laya.Script {
     configX = 100;
     configY = 100;
     cretatGem(){
-        // let cells:number = MainScene.remainCount = Math.pow((this.GameLV+1+2),2);
         let cell:Laya.Image = null;
         this.GemContain
         let sn = 0;
@@ -43,6 +42,10 @@ export default class MainScene extends Laya.Script {
                 sn++;
                 cell.x = this.configX * j;
                 cell.y = this.configY * i;
+                if(i==0||i==(this.GameLV+2)||j==0||j==(this.GameLV+2)){
+                    cell.visible = false;
+                    cell.getComponent(CellScript).setEliminateOrNot(true);
+                }
                 this.GemContain.addChild(cell);
             }
         }
@@ -72,12 +75,13 @@ export default class MainScene extends Laya.Script {
                 let gemJ = <Laya.Image>MainScene.MS_self.gemS[j];
                 if(imgI.visible&&imgJ.visible&&gemI.visible&&gemJ.visible){
                     if(imgI.getComponent(CellScript).gemType==imgJ.getComponent(CellScript).gemType){
-                        return
+                        return true;
                     }
                 }
             }
         }
         console.log("没有可以消除的");
+        return false;
     }
 
     cancleChioced(sn1,sn2){
