@@ -181,7 +181,7 @@
                for (let i = 0; i < (CheckScript.GameLv); i++) {
                    let VScanPos = new Laya.Vector2();
                    let t1SN = target1.getComponent(CellScript).getGemSn();
-                   VScanNode = MainScene.MS_self.GemContain.getChildAt(t1SN + i);
+                   VScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.y + i * CheckScript.GameLv);
                    let HSSN = VScanNode.getComponent(CellScript).getGemSn();
                    VScanPos = VScanNode.getComponent(CellScript).getCellPos();
                    if ((VScanNode.getComponent(CellScript).getEliminateOrNot()) && turn_once(VScanNode, target2, VScanPos, pos2, false)) {

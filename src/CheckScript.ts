@@ -245,9 +245,8 @@ export default class CheckScript extends Laya.Script {
         function turn_twice_VScan(target1:Laya.Node,target2:Laya.Node,VScanNode:Laya.Node,pos1:Laya.Vector2,pos2:Laya.Vector2){
             for(let i=0;i<(CheckScript.GameLv);i++){//扫描target1同行节点与target2是否存在单拐点情况
                 let VScanPos:Laya.Vector2=new Laya.Vector2();
-                let t1SN = target1.getComponent(CellScript).getGemSn();
-                VScanNode = MainScene.MS_self.GemContain.getChildAt(t1SN+i);
-                let HSSN = VScanNode.getComponent(CellScript).getGemSn();
+                VScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.y + i*CheckScript.GameLv);
+                let VSSN = VScanNode.getComponent(CellScript).getGemSn();
                 VScanPos = VScanNode.getComponent(CellScript).getCellPos();
                 if((VScanNode.getComponent(CellScript).getEliminateOrNot())&&turn_once(VScanNode,target2,VScanPos,pos2,false)){
                     //存在单拐点,进行
