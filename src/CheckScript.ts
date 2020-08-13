@@ -82,22 +82,24 @@ export default class CheckScript extends Laya.Script {
                 }else{//不相邻
                     let minsn = (pos2.y > pos1.y) ? target1.getComponent(CellScript).getGemSn():target2.getComponent(CellScript).getGemSn();
                     for(let i=1;i<(Math.abs(pos2.y-pos1.y));i++){
-                        let sn = minsn +i;
-                        let node = MainScene.MS_self.GemContain.getChildAt(sn);
-                        if(node.getComponent(CellScript).getEliminateOrNot()){
-                            if(i==(Math.abs(pos2.y-pos1.y)-1)){
-                                if(eli){
+                        if(eli){
+                            let sn = minsn +i;
+                            let node = MainScene.MS_self.GemContain.getChildAt(sn);
+                            if(node.getComponent(CellScript).getEliminateOrNot()){
+                                if(i==(Math.abs(pos2.y-pos1.y)-1)){
+                                    // if(eli){
                                     goCheck = true;
                                     return MainScene.eliminate(sn1,sn2);//相邻的情况，主动消除
-                                }else{
-                                    return true;
+                                    // }
                                 }
-                            }
-                            else{
-                                continue
+                                else{
+                                    continue
+                                }
+                            }else{
+                                return MainScene.MS_self.cancleChioced(sn1,sn2);
                             }
                         }else{
-                            return MainScene.MS_self.cancleChioced(sn1,sn2);
+                            return true;
                         }
                     }
                 }
@@ -123,22 +125,22 @@ export default class CheckScript extends Laya.Script {
                     }
                 }else{//不相邻
                     let minsn = (pos2.x > pos1.x) ? target1.getComponent(CellScript).getGemSn():target2.getComponent(CellScript).getGemSn();
-                    for(let i=0;i<Math.abs(pos1.x-pos2.x);i++){
-                        let sn =minsn+i*CheckScript.GameLv;
-                        let node = MainScene.MS_self.GemContain.getChildAt(sn);
-                        if(node.getComponent(CellScript).getEliminateOrNot()){
-                            if(i==(Math.abs(pos2.x-pos1.x)-1)){
-                                if(eli){
+                    for(let i=1;i<Math.abs(pos1.x-pos2.x);i++){
+                        if(eli){
+                            let sn =minsn+i*CheckScript.GameLv;
+                            let node = MainScene.MS_self.GemContain.getChildAt(sn);
+                            if(node.getComponent(CellScript).getEliminateOrNot()){
+                                if(i==(Math.abs(pos2.x-pos1.x)-1)){
                                     goCheck = true;
                                     return MainScene.eliminate(sn1,sn2);//不相邻的情况，主动
                                 }else{
-                                    return true;
+                                    continue
                                 }
                             }else{
-                                continue
+                                return MainScene.MS_self.cancleChioced(sn1,sn2);
                             }
                         }else{
-                            return MainScene.MS_self.cancleChioced(sn1,sn2);
+                            return true;
                         }
                     }
                 }
@@ -206,10 +208,7 @@ export default class CheckScript extends Laya.Script {
         function turn_twice(target1:Laya.Node,target2:Laya.Node,pos1:Laya.Vector2,pos2:Laya.Vector2){
             console.log("进入有2个拐点的情况");
             if(!turn_twice_HScan(target1,target2,t1Nodes_H,pos1,pos2)){
-                turn_twice_HScan(target2,target1,t2Nodes_H,pos2,pos1);
-            }
-            if(!turn_twice_VScan(target1,target2,t1Nodes_H,pos1,pos2)){
-                turn_twice_VScan(target2,target1,t2Nodes_H,pos2,pos1);
+                turn_twice_VScan(target1,target1,t2Nodes_H,pos2,pos1);
             }
             return false;
 
@@ -224,13 +223,15 @@ export default class CheckScript extends Laya.Script {
          * @param pos2 
          */
         function turn_twice_HScan(target1:Laya.Node,target2:Laya.Node,HScanNode:Laya.Node,pos1:Laya.Vector2,pos2:Laya.Vector2){
+            let H_flag;
+            let V_flag;
             for(let i=0;i<(CheckScript.GameLv);i++){//扫描target1同行节点与target2是否存在单拐点情况
                 let HScanPos:Laya.Vector2=new Laya.Vector2();
                 HScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.x*(CheckScript.GameLv)+i);
-                let HSSN = HScanNode.getComponent(CellScript).getGemSn();
                 HScanPos = HScanNode.getComponent(CellScript).getCellPos();
-                if((HScanNode.getComponent(CellScript).getEliminateOrNot())&&turn_once(HScanNode,target2,HScanPos,pos2,false)){
-                    //存在单拐点,进行
+                H_flag= Horizon(HScanNode,target1,HScanPos,pos2,false);
+                V_flag=turn_once(HScanNode,target2,HScanPos,pos2,false)
+                if(H_flag&&V_flag){
                     console.log("存在与target1同行与target2单拐点的点",HScanNode);
                     CheckScript.CS_self.DrawLine(pos1,pos2,HScanPos,zhedian2);
                     goCheck = true;
@@ -238,18 +239,32 @@ export default class CheckScript extends Laya.Script {
                     return true;
                 }
             }
-            //循环结束，target1不存在点满足条件，扫描target2同行点
-            // return false;
+            for(let i=(CheckScript.GameLv)-1;i>=0;i--){//扫描target1同行节点与target2是否存在单拐点情况
+                let HScanPos:Laya.Vector2=new Laya.Vector2();
+                HScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.x*(CheckScript.GameLv)+i);
+                HScanPos = HScanNode.getComponent(CellScript).getCellPos();
+                H_flag= Horizon(HScanNode,target2,HScanPos,pos2,false);
+                V_flag=turn_once(HScanNode,target1,HScanPos,pos2,false)
+                if(H_flag&&V_flag){
+                    console.log("存在与target1同行与target2单拐点的点",HScanNode);
+                    CheckScript.CS_self.DrawLine(pos1,pos2,HScanPos,zhedian2);
+                    goCheck = true;
+                    MainScene.eliminate(sn1,sn2);
+                    return true;
+                }
+            }
         }
 
         function turn_twice_VScan(target1:Laya.Node,target2:Laya.Node,VScanNode:Laya.Node,pos1:Laya.Vector2,pos2:Laya.Vector2){
+            let H_flag;
+            let V_flag;
             for(let i=0;i<(CheckScript.GameLv);i++){//扫描target1同行节点与target2是否存在单拐点情况
                 let VScanPos:Laya.Vector2=new Laya.Vector2();
                 VScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.y + i*CheckScript.GameLv);
-                let VSSN = VScanNode.getComponent(CellScript).getGemSn();
                 VScanPos = VScanNode.getComponent(CellScript).getCellPos();
-                if((VScanNode.getComponent(CellScript).getEliminateOrNot())&&turn_once(VScanNode,target2,VScanPos,pos2,false)){
-                    //存在单拐点,进行
+                H_flag= Horizon(VScanNode,target1,VScanPos,pos2,false)
+                V_flag=turn_once(VScanNode,target2,VScanPos,pos2,false)
+                if(H_flag&&V_flag){
                     console.log("存在与target1同行与target2单拐点的点",VScanNode);
                     CheckScript.CS_self.DrawLine(pos1,pos2,VScanPos,zhedian2);
                     goCheck = true;
@@ -257,12 +272,21 @@ export default class CheckScript extends Laya.Script {
                     return true;
                 }
             }
-            //循环结束，target1不存在点满足条件，扫描target2同行点
-            // return false;
+            for(let i=(CheckScript.GameLv)-1;i>=0;i--){//扫描target1同行节点与target2是否存在单拐点情况
+                let VScanPos:Laya.Vector2=new Laya.Vector2();
+                VScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.y + i*CheckScript.GameLv);
+                VScanPos = VScanNode.getComponent(CellScript).getCellPos();
+                H_flag= Horizon(VScanNode,target2,VScanPos,pos2,false)
+                V_flag=turn_once(VScanNode,target1,VScanPos,pos2,false)
+                if(H_flag&&V_flag){
+                    console.log("存在与target1同行与target2单拐点的点",VScanNode);
+                    CheckScript.CS_self.DrawLine(pos1,pos2,VScanPos,zhedian2);
+                    goCheck = true;
+                    MainScene.eliminate(sn1,sn2);
+                    return true;
+                }
+            }
         }
-
-
-        
     }
 
     /**
