@@ -14,6 +14,7 @@ export default class MainScene extends Laya.Script {
     private LineNode:Laya.Sprite=null;
 
     private CellType=[0,0,0,0];
+    /**已经找到的路径数，只允许等于1，0 */
     public static LINECONTRL = 0;
     onAwake():void{
         this.GemContain = <Laya.Panel>this.owner.getChildByName("GemContain");
@@ -41,6 +42,8 @@ export default class MainScene extends Laya.Script {
     configY = 100;
     /**游戏区域生成函数 */
     cretatGem(){
+        this.GemContain.removeChildren();
+        this.gemS=new Array<Laya.Image>();
         for(let i=0;i<this.CellType.length;i++){
             this.CellType[i]=0;
         }
@@ -157,7 +160,7 @@ export default class MainScene extends Laya.Script {
         console.log(endPos)
         let timer = new Laya.Timer();
         timer.once(500,this,()=>{
-            MainScene.LINECONTRL = 0;
+            // MainScene.LINECONTRL = 0;
             MainScene.MS_self.LineNode.graphics.clear();
             timer.clear(this,()=>{
                 console.log("清除计时器");
