@@ -13,6 +13,7 @@ export default class MainScene extends Laya.Script {
     private static remainCount = 0;
     private LineNode:Laya.Sprite=null;
 
+    private CellType=[0,0,0,0];
     public static LINECONTRL = 0;
     onAwake():void{
         this.GemContain = <Laya.Panel>this.owner.getChildByName("GemContain");
@@ -24,7 +25,10 @@ export default class MainScene extends Laya.Script {
         this.LineNode.width = 640;
         this.LineNode.height = 640;
         this.owner.addChild(this.LineNode);
-        this.cretatGem();
+        do{        
+            this.cretatGem();
+            console.log(this.CellType);
+        } while(this.CellType[0]%2!=0||this.CellType[1]%2!=0||this.CellType[2]%2!=0||this.CellType[3]%2!=0)
     }
 
     /**获取游戏等级 */
@@ -37,6 +41,9 @@ export default class MainScene extends Laya.Script {
     configY = 100;
     /**游戏区域生成函数 */
     cretatGem(){
+        for(let i=0;i<this.CellType.length;i++){
+            this.CellType[i]=0;
+        }
         let cell:Laya.Image = null;
         let sn = 0;
         for(let i=0;i<(this.GameLV+1+2);i++){
@@ -49,6 +56,9 @@ export default class MainScene extends Laya.Script {
                 if(i==0||i==(this.GameLV+2)||j==0||j==(this.GameLV+2)){
                     cell.visible = false;
                     cell.getComponent(CellScript).setEliminateOrNot(true);
+                }
+                if(cell.visible){
+                    this.setCellType(cell.getComponent(CellScript).gemType);
                 }
                 this.GemContain.addChild(cell);
             }
@@ -153,5 +163,27 @@ export default class MainScene extends Laya.Script {
                 console.log("清除计时器");
             });
         })
+    }
+
+
+    setCellType(type){
+        switch(type){
+            case 1:{
+                this.CellType[0]++;
+                break;
+            }
+            case 2:{
+                this.CellType[1]++;
+                break;
+            }
+            case 3:{
+                this.CellType[2]++;
+                break;
+            }
+            case 4:{
+                this.CellType[3]++;
+                break;
+            }
+        }
     }
 }

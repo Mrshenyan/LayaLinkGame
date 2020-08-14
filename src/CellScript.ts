@@ -19,7 +19,7 @@ export default class CellScript extends Laya.Script {
     setCellPos(x:number,y:number){
         this.CellPos.x = x;
         this.CellPos.y = y;
-        console.log("cellpos: ",this.CellPos.x,this.CellPos.y);
+        // console.log("cellpos: ",this.CellPos.x,this.CellPos.y);
     }
     getCellPos():Laya.Vector2{
         return this.CellPos;
@@ -61,7 +61,6 @@ export default class CellScript extends Laya.Script {
         this.chioced = <Laya.Image>this.owner.getChildByName("chioce");
         this.BtnClick = <Laya.Button>this.owner.getChildByName("btn_click");
         this.gemSN = sn;
-        console.log("23123123123:   ",this.gemSN);
         for(let i=0;i<this.GemParent.numChildren;i++){
             this.gemS.push(<Laya.Image>this.GemParent.getChildAt(i));
         }
@@ -74,8 +73,8 @@ export default class CellScript extends Laya.Script {
         }
         this.setCellPos(indexX,indexY);
         this.BtnClick.clickHandler = new Laya.Handler(this,this.btnCallBack,[this.gemType,this.gemSN])
-        console.log("输出生成的宝石类型：",this.gemType);
-        console.log("cellpos: ",this.CellPos.x,this.CellPos.y);
+        // console.log("输出生成的宝石类型：",this.gemType);
+        // console.log("cellpos: ",this.CellPos.x,this.CellPos.y);
         
         return this.owner;
     }
@@ -86,13 +85,13 @@ export default class CellScript extends Laya.Script {
         }
         let EliminateReturnValue = -1;
         this.chioced.visible=!this.chioced.visible;
-        console.log("cellpos           : ",this.getCellPos(),gemSN);
+        // console.log("cellpos           : ",this.getCellPos(),gemSN);
         if(!this.chioced.visible){
             CheckScript_1.reSet();
             return;
         }
         EliminateReturnValue = CheckScript_1.eliminate(gemType,gemSN,this.CellPos);
-        console.log("EliminateReturnValue: ",EliminateReturnValue);
+        // console.log("EliminateReturnValue: ",EliminateReturnValue);
     }
 
 

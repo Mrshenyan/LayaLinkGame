@@ -320,7 +320,6 @@
        setCellPos(x, y) {
            this.CellPos.x = x;
            this.CellPos.y = y;
-           console.log("cellpos: ", this.CellPos.x, this.CellPos.y);
        }
        getCellPos() {
            return this.CellPos;
@@ -353,7 +352,6 @@
            this.chioced = this.owner.getChildByName("chioce");
            this.BtnClick = this.owner.getChildByName("btn_click");
            this.gemSN = sn;
-           console.log("23123123123:   ", this.gemSN);
            for (let i = 0; i < this.GemParent.numChildren; i++) {
                this.gemS.push(this.GemParent.getChildAt(i));
            }
@@ -366,8 +364,6 @@
            }
            this.setCellPos(indexX, indexY);
            this.BtnClick.clickHandler = new Laya.Handler(this, this.btnCallBack, [this.gemType, this.gemSN]);
-           console.log("输出生成的宝石类型：", this.gemType);
-           console.log("cellpos: ", this.CellPos.x, this.CellPos.y);
            return this.owner;
        }
        btnCallBack(gemType, gemSN) {
@@ -376,13 +372,11 @@
            }
            let EliminateReturnValue = -1;
            this.chioced.visible = !this.chioced.visible;
-           console.log("cellpos           : ", this.getCellPos(), gemSN);
            if (!this.chioced.visible) {
                CheckScript.reSet();
                return;
            }
            EliminateReturnValue = CheckScript.eliminate(gemType, gemSN, this.CellPos);
-           console.log("EliminateReturnValue: ", EliminateReturnValue);
        }
    }
    CellScript.CS_self = null;
@@ -392,6 +386,7 @@
            super();
            this.GameLV = 3;
            this.LineNode = null;
+           this.CellType = [0, 0, 0, 0];
            this.configX = 100;
            this.configY = 100;
        }
@@ -405,12 +400,18 @@
            this.LineNode.width = 640;
            this.LineNode.height = 640;
            this.owner.addChild(this.LineNode);
-           this.cretatGem();
+           do {
+               this.cretatGem();
+               console.log(this.CellType);
+           } while (this.CellType[0] % 2 != 0 || this.CellType[1] % 2 != 0 || this.CellType[2] % 2 != 0 || this.CellType[3] % 2 != 0);
        }
        getGameLv() {
            return this.GameLV;
        }
        cretatGem() {
+           for (let i = 0; i < this.CellType.length; i++) {
+               this.CellType[i] = 0;
+           }
            let cell = null;
            let sn = 0;
            for (let i = 0; i < (this.GameLV + 1 + 2); i++) {
@@ -423,6 +424,9 @@
                    if (i == 0 || i == (this.GameLV + 2) || j == 0 || j == (this.GameLV + 2)) {
                        cell.visible = false;
                        cell.getComponent(CellScript).setEliminateOrNot(true);
+                   }
+                   if (cell.visible) {
+                       this.setCellType(cell.getComponent(CellScript).gemType);
                    }
                    this.GemContain.addChild(cell);
                }
@@ -513,6 +517,26 @@
                    console.log("清除计时器");
                });
            });
+       }
+       setCellType(type) {
+           switch (type) {
+               case 1: {
+                   this.CellType[0]++;
+                   break;
+               }
+               case 2: {
+                   this.CellType[1]++;
+                   break;
+               }
+               case 3: {
+                   this.CellType[2]++;
+                   break;
+               }
+               case 4: {
+                   this.CellType[3]++;
+                   break;
+               }
+           }
        }
    }
    MainScene.MS_self = null;
