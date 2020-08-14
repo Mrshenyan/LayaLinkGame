@@ -48,7 +48,7 @@ export default class CheckScript extends Laya.Script {
         /**目标点之间的阻碍物个数 */
         let blockCount=0;
         /**如有，第二个拐点 */
-        let zhedian2
+        let zhedian2:Laya.Vector2=new Laya.Vector2(-1,-1);
         if(type1!=type2&&(type1!=-1&&type2!=-1)){
             goCheck = false;
             return MainScene.cancleChioced(sn1,sn2);
@@ -98,6 +98,7 @@ export default class CheckScript extends Laya.Script {
                         if(eli&&blockCount==0){
                             goCheck = true;
                             MainScene.eliminate(sn1,sn2);
+                            MainScene.MS_self.DrawLine(sn1,sn2);
                             return true;
                         }
                         if(!eli&&blockCount==0)return true;
@@ -110,6 +111,7 @@ export default class CheckScript extends Laya.Script {
                 if(eli){
                     goCheck=true;
                     MainScene.eliminate(sn1,sn2);
+                    MainScene.MS_self.DrawLine(sn1,sn2);
                     return;
                 }else{
                     return true;
@@ -140,11 +142,11 @@ export default class CheckScript extends Laya.Script {
                 if(arg1&&arg2){
                     if(eli){
                         goCheck = true;
-                        zhedian2 = target3.getComponent(CellScript).getCellPos();
-                        CheckScript.CS_self.DrawLine(target1,target2,target3);
+                        zhedian2 = target3.getComponent(CellScript).getGemSn();
+                        MainScene.MS_self.DrawLine(sn1,sn2,sn3);
                         return MainScene.eliminate(sn1,sn2);
                     }else{
-                        zhedian2 = target3.getComponent(CellScript).getCellPos();
+                        zhedian2 = target3.getComponent(CellScript).getGemSn();
                         return true;
                     }
                 }
@@ -155,11 +157,11 @@ export default class CheckScript extends Laya.Script {
                 if(arg1&&arg2){
                     if(eli){
                         goCheck = true;
-                        zhedian2 = target4.getComponent(CellScript).getCellPos();
-                        CheckScript.CS_self.DrawLine(target1,target2,target4);
+                        zhedian2 = target4.getComponent(CellScript).getGemSn();
+                        MainScene.MS_self.DrawLine(sn1,sn2,sn4);
                         return MainScene.eliminate(sn1,sn2);
                     }else{
-                        zhedian2 = target4.getComponent(CellScript).getCellPos();
+                        zhedian2 = target4.getComponent(CellScript).getGemSn();
                         return true;
                     }
                 }
@@ -202,15 +204,17 @@ export default class CheckScript extends Laya.Script {
             let V_flag_r;
             for(let i=0;i<(CheckScript.GameLv);i++){//扫描target1同行节点与target2是否存在单拐点情况
                 let HScanPos:Laya.Vector2=new Laya.Vector2();
+                let HSSN:number=-1;
                 HScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.x*(CheckScript.GameLv)+i);
                 HScanPos = HScanNode.getComponent(CellScript).getCellPos();
+                HSSN = HScanNode.getComponent(CellScript).getGemSn();
                 if(HScanNode.getComponent(CellScript).getEliminateOrNot()){
                     H_flag_r = Horizon(HScanNode,target1,HScanPos,pos1,false,true);
                     H_flag_L = Horizon(HScanNode,target1,HScanPos,pos1,false,false);
                     V_flag_r = turn_once(HScanNode,target2,HScanPos,pos2,false)
                     if((H_flag_r&&V_flag_r)||(H_flag_L&&V_flag_r)){
                         console.log("存在与target1同行与target2单拐点的点",HScanNode);
-                        CheckScript.CS_self.DrawLine(pos1,pos2,HScanPos,zhedian2);
+                        MainScene.MS_self.DrawLine(sn1,sn2,HSSN,zhedian2);
                         goCheck = true;
                         MainScene.eliminate(sn1,sn2);
                         console.log(HScanPos,H_flag_r,H_flag_L,V_flag_r,"H_1");
@@ -221,15 +225,17 @@ export default class CheckScript extends Laya.Script {
             }
             for(let i=0;i<(CheckScript.GameLv);i++){//扫描target1同行节点与target2是否存在单拐点情况
                 let HScanPos:Laya.Vector2=new Laya.Vector2();
+                let HSSN:number=-1;
                 HScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.x*(CheckScript.GameLv)+i);
                 HScanPos = HScanNode.getComponent(CellScript).getCellPos();
+                HSSN = HScanNode.getComponent(CellScript).getGemSn();
                 if(HScanNode.getComponent(CellScript).getEliminateOrNot()){
                     H_flag_r= Horizon(HScanNode,target2,HScanPos,pos2,false,true);
                     H_flag_L = Horizon(HScanNode,target2,HScanPos,pos2,false,false);
                     V_flag_r=turn_once(HScanNode,target1,HScanPos,pos1,false)
                     if((H_flag_r&&V_flag_r)||(H_flag_L&&V_flag_r)){
                         console.log("存在与target1同行与target2单拐点的点",HScanNode);
-                        CheckScript.CS_self.DrawLine(pos1,pos2,HScanPos,zhedian2);
+                        MainScene.MS_self.DrawLine(sn1,sn2,HSSN,zhedian2);
                         goCheck = true;
                         MainScene.eliminate(sn1,sn2);
                         console.log(HScanPos,H_flag_r,H_flag_L,V_flag_r,"H_2");
@@ -254,15 +260,17 @@ export default class CheckScript extends Laya.Script {
             let V_flag_r;
             for(let i=0;i<(CheckScript.GameLv);i++){//扫描target1同行节点与target2是否存在单拐点情况
                 let VScanPos:Laya.Vector2=new Laya.Vector2();
+                let VSSN:number=-1;
                 VScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.y + i*CheckScript.GameLv);
                 VScanPos = VScanNode.getComponent(CellScript).getCellPos();
+                VSSN = VScanNode.getComponent(CellScript).getGemSn();
                 if(VScanNode.getComponent(CellScript).getEliminateOrNot()){
                     H_flag_r= Horizon(VScanNode,target1,VScanPos,pos1,false,true);
                     H_flag_L= Horizon(VScanNode,target1,VScanPos,pos1,false,false);
                     V_flag_r=turn_once(VScanNode,target2,VScanPos,pos2,false)
                     if((H_flag_r&&V_flag_r)||(H_flag_L&&V_flag_r)){
                         console.log("存在与target1同行与target2单拐点的点",VScanNode);
-                        CheckScript.CS_self.DrawLine(pos1,pos2,VScanPos,zhedian2);
+                        MainScene.MS_self.DrawLine(sn1,sn2,VSSN,zhedian2);
                         goCheck = true;
                         MainScene.eliminate(sn1,sn2);
                         console.log(VScanPos,H_flag_r,H_flag_L,V_flag_r,"V_1");
@@ -273,15 +281,17 @@ export default class CheckScript extends Laya.Script {
             }
             for(let i=0;i<(CheckScript.GameLv);i++){//扫描target1同行节点与target2是否存在单拐点情况
                 let VScanPos:Laya.Vector2=new Laya.Vector2();
+                let VSSN:number=-1;
                 VScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.y + i*CheckScript.GameLv);
                 VScanPos = VScanNode.getComponent(CellScript).getCellPos();
+                VSSN = VScanNode.getComponent(CellScript).getGemSn();
                 if(VScanNode.getComponent(CellScript).getEliminateOrNot()){
                     H_flag_r= Horizon(VScanNode,target2,VScanPos,pos2,false,true);
                     H_flag_L= Horizon(VScanNode,target2,VScanPos,pos2,false,false);
                     V_flag_r=turn_once(VScanNode,target1,VScanPos,pos1,false)
                     if((H_flag_r&&V_flag_r)||(H_flag_L&&V_flag_r)){
                         console.log("存在与target1同行与target2单拐点的点",VScanNode);
-                        CheckScript.CS_self.DrawLine(pos1,pos2,VScanPos,zhedian2);
+                        MainScene.MS_self.DrawLine(sn1,sn2,VSSN,zhedian2);
                         goCheck = true;
                         MainScene.eliminate(sn1,sn2);
                         console.log(VScanPos,H_flag_r,H_flag_L,V_flag_r,"V_2");
@@ -291,20 +301,6 @@ export default class CheckScript extends Laya.Script {
                 console.log(VScanPos,H_flag_r,H_flag_L,V_flag_r,"V_2");
             }
         }
-    }
-
-    /**
-     * 划线
-     * @param startPos 起点
-     * @param endPos 终点
-     * @param arg1 折点1
-     * @param arg2 折点2
-     */
-    public DrawLine(startPos,endPos,arg1?,arg2?){
-        console.log(startPos)
-        console.log(endPos)
-        console.log(arg1)
-        console.log(arg2)
     }
 
     /**

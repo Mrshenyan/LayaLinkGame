@@ -1,5 +1,5 @@
 import CellScript from "./CellScript";
-import CheckScript from "./CheckScript";
+import CheckScript from "./CheckScript_1";
 import { time } from "console";
 
 export default class MainScene extends Laya.Script {
@@ -11,10 +11,17 @@ export default class MainScene extends Laya.Script {
     static MS_self:MainScene = null;
     public gemS:Array<Laya.Image>;
     private static remainCount = 0;
+    private LineNode:Laya.Sprite=null;
     onAwake():void{
         this.GemContain = <Laya.Panel>this.owner.getChildByName("GemContain");
         MainScene.MS_self = this;
         MainScene.MS_self.gemS = new Array<Laya.Image>();
+        this.LineNode = new Laya.Sprite();
+        this.LineNode.x = 0
+        this.LineNode.y = 160;
+        this.LineNode.width = 640;
+        this.LineNode.height = 640;
+        this.owner.addChild(this.LineNode);
         this.cretatGem();
     }
 
@@ -29,7 +36,6 @@ export default class MainScene extends Laya.Script {
     /**游戏区域生成函数 */
     cretatGem(){
         let cell:Laya.Image = null;
-        this.GemContain
         let sn = 0;
         for(let i=0;i<(this.GameLV+1+2);i++){
             for(let j=0;j<this.GameLV+1+2;j++){
@@ -96,5 +102,53 @@ export default class MainScene extends Laya.Script {
             });
         })
         CheckScript.reSet();
+    }
+
+    
+    /**
+     * 划线
+     * @param start 起点序号
+     * @param end 终点
+     * @param arg1 折点1
+     * @param arg2 折点2
+     */
+    public DrawLine(start,end,arg1?,arg2?){
+        let startSp = <Laya.Sprite>this.GemContain.getChildAt(start);
+        let startPos = new Laya.Point(startSp.x+49.5,startSp.y+49.5);
+        let endSp = <Laya.Sprite>this.GemContain.getChildAt(end);
+        let endPos:Laya.Point;
+        if(arg1&&arg2){
+            let arg1Sp = <Laya.Sprite>this.GemContain.getChildAt(arg1);
+            let arg1Pos =   new Laya.Point(arg1Sp.x+49.5,arg1Sp.y+49.5);
+            let arg2Sp = <Laya.Sprite>this.GemContain.getChildAt(arg2);
+            let arg2Pos =   new Laya.Point(arg2Sp.x+49.5,arg2Sp.y+49.5);
+            console.log(arg1Pos)
+            console.log(arg2Pos)
+            endPos = new Laya.Point(endSp.x+49.5,endSp.y+49.5);
+
+            this.LineNode.graphics.drawLine(startPos.x,startPos.y,arg1Pos.x,arg1Pos.y,"ff0000",2);//使用drawLines不知道为什么会画的线不是预期，参数3是起点坐标的相对值。
+            this.LineNode.graphics.drawLine(arg1Pos.x,arg1Pos.y,arg2Pos.x,arg2Pos.y,"ff0000",2);
+            this.LineNode.graphics.drawLine(arg2Pos.x,arg2Pos.y,endPos.x,endPos.y,"ff0000",2);
+        }else if(arg1&&!arg2){
+            let arg1Sp = <Laya.Sprite>this.GemContain.getChildAt(arg1);
+            let arg1Pos =   new Laya.Point(arg1Sp.x+49.5,arg1Sp.y+49.5);
+            console.log(arg1Pos)
+            endPos = new Laya.Point(endSp.x+49.5,endSp.y+49.5);
+            this.LineNode.graphics.drawLine(startPos.x,startPos.y,arg1Pos.x,arg1Pos.y,"ff0000",2);
+            this.LineNode.graphics.drawLine(arg1Pos.x,arg1Pos.y,endPos.x,endPos.y,"ff0000",2);
+        }
+        else{
+            endPos = new Laya.Point(endSp.x+49.5,endSp.y+49.5);
+            this.LineNode.graphics.drawLine(startPos.x,startPos.y,endPos.x,endPos.y,"ff0000",2);
+        }
+        console.log(startPos)
+        console.log(endPos)
+        let timer = new Laya.Timer();
+        timer.once(500,this,()=>{
+            MainScene.MS_self.LineNode.graphics.clear();
+            timer.clear(this,()=>{
+                console.log("清除计时器");
+            });
+        })
     }
 }

@@ -1,9 +1,13 @@
-import CheckScript from "./CheckScript";
+import CheckScript from "./CheckScript_1";
 import MainScene from "./MainScene";
 
 export default class CellScript extends Laya.Script {
     /** @prop {name:gemType,tips:"宝石的类型",type:Int,default:1} */
     public gemType:number = 1;
+    /** @prop {name:posx,tips:"宝石中心点x",type:Int,default:49.5} */
+    public posx:number =49.5;
+    /** @prop {name:posy,tips:"宝石中心点y",type:Int,default:49.5} */
+    public posy:number =49.5;
     private gemS:Array<Laya.Image>;
     private chioced:Laya.Image;
     private GemParent:Laya.Node;

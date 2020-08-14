@@ -2,7 +2,7 @@
     "x":0,
     "type":"Scene",
     "selectedBox":2,
-    "selecteID":7,
+    "selecteID":6,
     "searchKey":"Scene",
     "props":{"width":640,"sceneColor":"#000000","height":960},
     "nodeParent":-1,
@@ -42,20 +42,6 @@
             "isAniNode":true,
             "hasChild":false,
             "compId":6,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Lines",
-            "searchKey":"Lines",
-            "props":{"lineWidth":1,"lineColor":"#ff0000"},
-            "nodeParent":2,
-            "label":"Lines",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":7,
             "child":[
                 ]
         }],
