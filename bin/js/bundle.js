@@ -16,6 +16,9 @@
            let target2 = MainScene.MS_self.GemContain.getChildAt(sn2);
            let t1Nodes_H = new Laya.Node();
            let t2Nodes_H = new Laya.Node();
+           let dx = 1;
+           let dy = 6;
+           let blockCount = 0;
            let zhedian2;
            if (type1 != type2 && (type1 != -1 && type2 != -1)) {
                goCheck = false;
@@ -25,10 +28,10 @@
                return -1;
            }
            if (pos2.x == pos1.x) {
-               Horizon(target1, target2, pos1, pos2, true);
+               Horizon(target1, target2, pos1, pos2, true, true);
            }
            if (pos2.y == pos1.y) {
-               Vertical(target1, target2, pos1, pos2, true);
+               Horizon(target1, target2, pos1, pos2, true, false);
            }
            if (!goCheck) {
                turn_once(target1, target2, pos1, pos2, true);
@@ -36,40 +39,44 @@
            if (!goCheck) {
                turn_twice(target1, target2, pos1, pos2);
            }
-           function Horizon(target1, target2, pos1, pos2, eli) {
-               if (pos2.x == pos1.x) {
-                   if ((Math.abs(pos1.y - pos2.y) == 1)) {
-                       if (eli) {
-                           goCheck = true;
-                           return MainScene.eliminate(sn1, sn2);
-                       }
-                       else {
-                           return true;
+           function Horizon(target1, target2, pos1, pos2, eli, hv) {
+               blockCount = 0;
+               let node;
+               let sn = Math.min(target1.getComponent(CellScript).getGemSn(), target2.getComponent(CellScript).getGemSn());
+               let nodesn = sn;
+               let delat = hv ? Math.abs(pos1.y - pos2.y) : Math.abs(pos1.x - pos2.x);
+               for (let i = 1; i < delat; i++) {
+                   nodesn = sn;
+                   if (hv) {
+                       nodesn += (i * dx);
+                   }
+                   else {
+                       nodesn += (i * dy);
+                   }
+                   node = MainScene.MS_self.GemContain.getChildAt(nodesn);
+                   if (node.getComponent(CellScript).getEliminateOrNot()) {
+                       if (i == (delat - 1)) {
+                           if (eli && blockCount == 0) {
+                               goCheck = true;
+                               MainScene.eliminate(sn1, sn2);
+                               return true;
+                           }
+                           if (!eli && blockCount == 0)
+                               return true;
                        }
                    }
                    else {
-                       let minsn = (pos2.y > pos1.y) ? target1.getComponent(CellScript).getGemSn() : target2.getComponent(CellScript).getGemSn();
-                       for (let i = 1; i < (Math.abs(pos2.y - pos1.y)); i++) {
-                           if (eli) {
-                               let sn = minsn + i;
-                               let node = MainScene.MS_self.GemContain.getChildAt(sn);
-                               if (node.getComponent(CellScript).getEliminateOrNot()) {
-                                   if (i == (Math.abs(pos2.y - pos1.y) - 1)) {
-                                       goCheck = true;
-                                       return MainScene.eliminate(sn1, sn2);
-                                   }
-                                   else {
-                                       continue;
-                                   }
-                               }
-                               else {
-                                   return MainScene.MS_self.cancleChioced(sn1, sn2);
-                               }
-                           }
-                           else {
-                               return true;
-                           }
-                       }
+                       blockCount++;
+                   }
+               }
+               if (delat == 1) {
+                   if (eli) {
+                       goCheck = true;
+                       MainScene.eliminate(sn1, sn2);
+                       return;
+                   }
+                   else {
+                       return true;
                    }
                }
            }
@@ -119,8 +126,8 @@
                let target3 = MainScene.MS_self.GemContain.getChildAt(sn3);
                let target4 = MainScene.MS_self.GemContain.getChildAt(sn4);
                if (target3.getComponent(CellScript).getEliminateOrNot()) {
-                   let arg1 = Horizon(target3, target1, pos3, pos1, false);
-                   let arg2 = Vertical(target2, target3, pos2, pos3, false);
+                   let arg1 = Horizon(target3, target1, pos3, pos1, false, true);
+                   let arg2 = Horizon(target3, target2, pos3, pos2, false, false);
                    if (arg1 && arg2) {
                        if (eli) {
                            goCheck = true;
@@ -135,8 +142,8 @@
                    }
                }
                if (target4.getComponent(CellScript).getEliminateOrNot()) {
-                   let arg1 = Horizon(target4, target2, pos4, pos2, false);
-                   let arg2 = Vertical(target1, target4, pos1, pos4, false);
+                   let arg1 = Horizon(target4, target2, pos4, pos2, false, true);
+                   let arg2 = Horizon(target4, target1, pos4, pos1, false, false);
                    if (arg1 && arg2) {
                        if (eli) {
                            goCheck = true;
@@ -153,74 +160,96 @@
                return false;
            }
            function turn_twice(target1, target2, pos1, pos2) {
-               console.log("进入有2个拐点的情况");
+               console.log("进入有2个拐点的情况", pos1, pos2);
                if (!turn_twice_HScan(target1, target2, t1Nodes_H, pos1, pos2)) {
-                   turn_twice_VScan(target1, target1, t2Nodes_H, pos2, pos1);
+                   turn_twice_VScan(target1, target2, t2Nodes_H, pos1, pos2);
                }
                return false;
            }
            function turn_twice_HScan(target1, target2, HScanNode, pos1, pos2) {
-               let H_flag;
-               let V_flag;
+               let H_flag_r;
+               let H_flag_L;
+               let V_flag_r;
                for (let i = 0; i < (CheckScript.GameLv); i++) {
                    let HScanPos = new Laya.Vector2();
                    HScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.x * (CheckScript.GameLv) + i);
                    HScanPos = HScanNode.getComponent(CellScript).getCellPos();
-                   H_flag = Horizon(HScanNode, target1, HScanPos, pos2, false);
-                   V_flag = turn_once(HScanNode, target2, HScanPos, pos2, false);
-                   if (H_flag && V_flag) {
-                       console.log("存在与target1同行与target2单拐点的点", HScanNode);
-                       CheckScript.CS_self.DrawLine(pos1, pos2, HScanPos, zhedian2);
-                       goCheck = true;
-                       MainScene.eliminate(sn1, sn2);
-                       return true;
+                   if (HScanNode.getComponent(CellScript).getEliminateOrNot()) {
+                       H_flag_r = Horizon(HScanNode, target1, HScanPos, pos1, false, true);
+                       H_flag_L = Horizon(HScanNode, target1, HScanPos, pos1, false, false);
+                       V_flag_r = turn_once(HScanNode, target2, HScanPos, pos2, false);
+                       if ((H_flag_r && V_flag_r) || (H_flag_L && V_flag_r)) {
+                           console.log("存在与target1同行与target2单拐点的点", HScanNode);
+                           CheckScript.CS_self.DrawLine(pos1, pos2, HScanPos, zhedian2);
+                           goCheck = true;
+                           MainScene.eliminate(sn1, sn2);
+                           console.log(HScanPos, H_flag_r, H_flag_L, V_flag_r, "H_1");
+                           return true;
+                       }
                    }
+                   console.log(HScanPos, H_flag_r, H_flag_L, V_flag_r, "H_1");
                }
-               for (let i = (CheckScript.GameLv) - 1; i >= 0; i--) {
+               for (let i = 0; i < (CheckScript.GameLv); i++) {
                    let HScanPos = new Laya.Vector2();
                    HScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.x * (CheckScript.GameLv) + i);
                    HScanPos = HScanNode.getComponent(CellScript).getCellPos();
-                   H_flag = Horizon(HScanNode, target2, HScanPos, pos2, false);
-                   V_flag = turn_once(HScanNode, target1, HScanPos, pos2, false);
-                   if (H_flag && V_flag) {
-                       console.log("存在与target1同行与target2单拐点的点", HScanNode);
-                       CheckScript.CS_self.DrawLine(pos1, pos2, HScanPos, zhedian2);
-                       goCheck = true;
-                       MainScene.eliminate(sn1, sn2);
-                       return true;
+                   if (HScanNode.getComponent(CellScript).getEliminateOrNot()) {
+                       H_flag_r = Horizon(HScanNode, target2, HScanPos, pos2, false, true);
+                       H_flag_L = Horizon(HScanNode, target2, HScanPos, pos2, false, false);
+                       V_flag_r = turn_once(HScanNode, target1, HScanPos, pos1, false);
+                       if ((H_flag_r && V_flag_r) || (H_flag_L && V_flag_r)) {
+                           console.log("存在与target1同行与target2单拐点的点", HScanNode);
+                           CheckScript.CS_self.DrawLine(pos1, pos2, HScanPos, zhedian2);
+                           goCheck = true;
+                           MainScene.eliminate(sn1, sn2);
+                           console.log(HScanPos, H_flag_r, H_flag_L, V_flag_r, "H_2");
+                           return true;
+                       }
                    }
+                   console.log(HScanPos, H_flag_r, H_flag_L, V_flag_r, "H_2");
                }
            }
            function turn_twice_VScan(target1, target2, VScanNode, pos1, pos2) {
-               let H_flag;
-               let V_flag;
+               let H_flag_r;
+               let H_flag_L;
+               let V_flag_r;
                for (let i = 0; i < (CheckScript.GameLv); i++) {
                    let VScanPos = new Laya.Vector2();
                    VScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.y + i * CheckScript.GameLv);
                    VScanPos = VScanNode.getComponent(CellScript).getCellPos();
-                   H_flag = Horizon(VScanNode, target1, VScanPos, pos2, false);
-                   V_flag = turn_once(VScanNode, target2, VScanPos, pos2, false);
-                   if (H_flag && V_flag) {
-                       console.log("存在与target1同行与target2单拐点的点", VScanNode);
-                       CheckScript.CS_self.DrawLine(pos1, pos2, VScanPos, zhedian2);
-                       goCheck = true;
-                       MainScene.eliminate(sn1, sn2);
-                       return true;
+                   if (VScanNode.getComponent(CellScript).getEliminateOrNot()) {
+                       H_flag_r = Horizon(VScanNode, target1, VScanPos, pos1, false, true);
+                       H_flag_L = Horizon(VScanNode, target1, VScanPos, pos1, false, false);
+                       V_flag_r = turn_once(VScanNode, target2, VScanPos, pos2, false);
+                       if ((H_flag_r && V_flag_r) || (H_flag_L && V_flag_r)) {
+                           console.log("存在与target1同行与target2单拐点的点", VScanNode);
+                           CheckScript.CS_self.DrawLine(pos1, pos2, VScanPos, zhedian2);
+                           goCheck = true;
+                           MainScene.eliminate(sn1, sn2);
+                           console.log(VScanPos, H_flag_r, H_flag_L, V_flag_r, "V_1");
+                           return true;
+                       }
                    }
+                   console.log(VScanPos, H_flag_r, H_flag_L, V_flag_r, "V_1");
                }
-               for (let i = (CheckScript.GameLv) - 1; i >= 0; i--) {
+               for (let i = 0; i < (CheckScript.GameLv); i++) {
                    let VScanPos = new Laya.Vector2();
                    VScanNode = MainScene.MS_self.GemContain.getChildAt(pos1.y + i * CheckScript.GameLv);
                    VScanPos = VScanNode.getComponent(CellScript).getCellPos();
-                   H_flag = Horizon(VScanNode, target2, VScanPos, pos2, false);
-                   V_flag = turn_once(VScanNode, target1, VScanPos, pos2, false);
-                   if (H_flag && V_flag) {
-                       console.log("存在与target1同行与target2单拐点的点", VScanNode);
-                       CheckScript.CS_self.DrawLine(pos1, pos2, VScanPos, zhedian2);
-                       goCheck = true;
-                       MainScene.eliminate(sn1, sn2);
-                       return true;
+                   if (VScanNode.getComponent(CellScript).getEliminateOrNot()) {
+                       H_flag_r = Horizon(VScanNode, target2, VScanPos, pos2, false, true);
+                       H_flag_L = Horizon(VScanNode, target2, VScanPos, pos2, false, false);
+                       V_flag_r = turn_once(VScanNode, target1, VScanPos, pos1, false);
+                       if ((H_flag_r && V_flag_r) || (H_flag_L && V_flag_r)) {
+                           console.log("存在与target1同行与target2单拐点的点", VScanNode);
+                           CheckScript.CS_self.DrawLine(pos1, pos2, VScanPos, zhedian2);
+                           goCheck = true;
+                           MainScene.eliminate(sn1, sn2);
+                           console.log(VScanPos, H_flag_r, H_flag_L, V_flag_r, "V_2");
+                           return true;
+                       }
                    }
+                   console.log(VScanPos, H_flag_r, H_flag_L, V_flag_r, "V_2");
                }
            }
        }
