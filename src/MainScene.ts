@@ -1,5 +1,5 @@
 import CellScript from "./CellScript";
-import CheckScript from "./CheckScript_1";
+import CheckScript_1 from "./CheckScript_1";
 import { time } from "console";
 
 export default class MainScene extends Laya.Script {
@@ -12,6 +12,8 @@ export default class MainScene extends Laya.Script {
     public gemS:Array<Laya.Image>;
     private static remainCount = 0;
     private LineNode:Laya.Sprite=null;
+
+    public static LINECONTRL = 0;
     onAwake():void{
         this.GemContain = <Laya.Panel>this.owner.getChildByName("GemContain");
         MainScene.MS_self = this;
@@ -64,11 +66,11 @@ export default class MainScene extends Laya.Script {
             p1_Rootparent.getComponent(CellScript).setEliminateOrNot(true);
             p2_Rootparent.getComponent(CellScript).setEliminateOrNot(true);
             MainScene.remainCount-=2;
-            
+            MainScene.LINECONTRL = 1;
         }
         p1_chioced.visible = false;
         p2_chioced.visible = false;
-        CheckScript.reSet();
+        CheckScript_1.reSet();
         for(let i=0;i<MainScene.MS_self.GemContain.numChildren-1;i++){
             for(let j=i+1;j<MainScene.MS_self.GemContain.numChildren;j++){
                 let imgI = <Laya.Image>MainScene.MS_self.GemContain.getChildAt(i);
@@ -101,7 +103,7 @@ export default class MainScene extends Laya.Script {
                 console.log("清除计时器");
             });
         })
-        CheckScript.reSet();
+        CheckScript_1.reSet();
     }
 
     
@@ -145,6 +147,7 @@ export default class MainScene extends Laya.Script {
         console.log(endPos)
         let timer = new Laya.Timer();
         timer.once(500,this,()=>{
+            MainScene.LINECONTRL = 0;
             MainScene.MS_self.LineNode.graphics.clear();
             timer.clear(this,()=>{
                 console.log("清除计时器");

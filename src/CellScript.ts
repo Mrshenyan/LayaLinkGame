@@ -1,4 +1,4 @@
-import CheckScript from "./CheckScript_1";
+import CheckScript_1 from "./CheckScript_1";
 import MainScene from "./MainScene";
 
 export default class CellScript extends Laya.Script {
@@ -88,10 +88,10 @@ export default class CellScript extends Laya.Script {
         this.chioced.visible=!this.chioced.visible;
         console.log("cellpos           : ",this.getCellPos(),gemSN);
         if(!this.chioced.visible){
-            CheckScript.reSet();
+            CheckScript_1.reSet();
             return;
         }
-        EliminateReturnValue = CheckScript.eliminate(gemType,gemSN,this.CellPos);
+        EliminateReturnValue = CheckScript_1.eliminate(gemType,gemSN,this.CellPos);
         console.log("EliminateReturnValue: ",EliminateReturnValue);
     }
 
