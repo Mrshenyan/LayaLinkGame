@@ -138,18 +138,22 @@
                let H_flag_L;
                let V_flag_r;
                MainScene.LINECONTRL = 0;
-               for (let i = pos1.y - 1; (i < pos1.y && i >= 0); i--) {
-                   if (MainScene.LINECONTRL == 0) {
-                       t1_Hfunc(i);
-                       t2_Hfunc(i);
+               CheckScript.worker1.onmessage = function () {
+                   for (let i = pos1.y - 1; (i < pos1.y && i >= 0); i--) {
+                       if (MainScene.LINECONTRL == 0) {
+                           t1_Hfunc(i);
+                           t2_Hfunc(i);
+                       }
                    }
-               }
-               for (let i = pos1.y + 1; (i > pos1.y && i < CheckScript.GameLv); i++) {
-                   if (MainScene.LINECONTRL == 0) {
-                       t1_Hfunc(i);
-                       t2_Hfunc(i);
+               };
+               CheckScript.worker2.onmessage = function () {
+                   for (let i = pos1.y + 1; (i > pos1.y && i < CheckScript.GameLv); i++) {
+                       if (MainScene.LINECONTRL == 0) {
+                           t1_Hfunc(i);
+                           t2_Hfunc(i);
+                       }
                    }
-               }
+               };
                return false;
                function t1_Hfunc(i) {
                    let HScanPos = new Laya.Vector2();
@@ -295,6 +299,8 @@
    CheckScript.Instance = null;
    CheckScript.CS_self = null;
    CheckScript.GameLv = 0;
+   CheckScript.worker1 = new Worker("./ScanScript");
+   CheckScript.worker2 = new Worker("./ScanScript");
 
    class CellScript extends Laya.Script {
        constructor() {
@@ -333,8 +339,7 @@
        }
        onDisable() {
        }
-       Init(sn, indexX, indexY) {
-           let self = this;
+       Init(sn, indexX, indexY, width) {
            CellScript.CS_self = this;
            this.GemParent = this.owner.getChildByName("Panel");
            this.gemS = new Array();
@@ -373,7 +378,7 @@
    class MainScene extends Laya.Script {
        constructor() {
            super();
-           this.GameLV = 3;
+           this.GameLV = 5;
            this.LineNode = null;
            this.CellType = [0, 0, 0, 0];
            this.configX = 100;
@@ -388,11 +393,16 @@
            this.LineNode.y = 160;
            this.LineNode.width = 640;
            this.LineNode.height = 640;
+           this.CellType = new Array(this.getGameLv() + 1);
            this.owner.addChild(this.LineNode);
+           let exit = false;
            do {
                this.cretatGem();
                console.log(this.CellType);
-           } while (this.CellType[0] % 2 != 0 || this.CellType[1] % 2 != 0 || this.CellType[2] % 2 != 0 || this.CellType[3] % 2 != 0);
+               for (let i = 0; i < MainScene.MS_self.CellType.length; i++) {
+                   exit = exit && (MainScene.MS_self.CellType[i] % 2 == 0);
+               }
+           } while (exit);
        }
        getGameLv() {
            return this.GameLV;
@@ -408,7 +418,7 @@
            for (let i = 0; i < (this.GameLV + 1 + 2); i++) {
                for (let j = 0; j < this.GameLV + 1 + 2; j++) {
                    cell = Laya.Pool.getItemByCreateFun("cellPrefab", this.cellPrefab.create, this.cellPrefab);
-                   cell.getComponent(CellScript).Init(sn, i, j);
+                   cell.getComponent(CellScript).Init(sn, i, j, this.LineNode.width / this.getGameLv());
                    sn++;
                    cell.x = this.configX * j;
                    cell.y = this.configY * i;

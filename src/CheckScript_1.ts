@@ -1,6 +1,7 @@
 import CellScript from "./CellScript";
 import MainScene from "./MainScene";
 import { posix } from "path";
+import { worker } from "cluster";
 
 export default class CheckScript extends Laya.Script {
     
@@ -18,6 +19,8 @@ export default class CheckScript extends Laya.Script {
     private static CS_self:CheckScript = null;
     /**关卡横向格子数 */
     private static GameLv =0;
+    public static worker1 = new Worker("./ScanScript"); 
+    public static worker2 = new Worker("./ScanScript"); 
    
     constructor() { super();
         // if(!CheckScript.Instance)CheckScript.Instance = new CheckScript();
@@ -222,17 +225,21 @@ export default class CheckScript extends Laya.Script {
             let H_flag_L;
             /**target1，target2拐点扫描对应点 */
             let V_flag_r;
-            MainScene.LINECONTRL=0
-            for(let i=pos1.y-1;(i<pos1.y&&i>=0);i--){
-                if(MainScene.LINECONTRL==0){
-                    t1_Hfunc(i);
-                    t2_Hfunc(i);
+            MainScene.LINECONTRL=0;
+            CheckScript.worker1.onmessage = function(){
+                for(let i=pos1.y-1;(i<pos1.y&&i>=0);i--){
+                    if(MainScene.LINECONTRL==0){
+                        t1_Hfunc(i);
+                        t2_Hfunc(i);
+                    }
                 }
             }
-            for(let i=pos1.y+1;(i>pos1.y&&i<CheckScript.GameLv);i++){
-                if(MainScene.LINECONTRL==0){
-                    t1_Hfunc(i);
-                    t2_Hfunc(i);
+            CheckScript.worker2.onmessage=function(){
+                for(let i=pos1.y+1;(i>pos1.y&&i<CheckScript.GameLv);i++){
+                    if(MainScene.LINECONTRL==0){
+                        t1_Hfunc(i);
+                        t2_Hfunc(i);
+                    }
                 }
             }
             return false;

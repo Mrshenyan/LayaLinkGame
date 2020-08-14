@@ -6,7 +6,7 @@ export default class MainScene extends Laya.Script {
     GemContain:Laya.Panel;
     /** @prop {name:cellPrefab,tips:"宝石预制体对象",type:Prefab} */
     cellPrefab :Laya.Prefab;
-    private GameLV:number =3;
+    private GameLV:number =5;
     constructor() { super(); }
     static MS_self:MainScene = null;
     public gemS:Array<Laya.Image>;
@@ -25,11 +25,16 @@ export default class MainScene extends Laya.Script {
         this.LineNode.y = 160;
         this.LineNode.width = 640;
         this.LineNode.height = 640;
+        this.CellType = new Array(this.getGameLv()+1);
         this.owner.addChild(this.LineNode);
+        let exit=false;
         do{        
             this.cretatGem();
             console.log(this.CellType);
-        } while(this.CellType[0]%2!=0||this.CellType[1]%2!=0||this.CellType[2]%2!=0||this.CellType[3]%2!=0)
+            for(let i=0;i<MainScene.MS_self.CellType.length;i++){
+                exit = exit&&(MainScene.MS_self.CellType[i]%2==0);
+            }
+        } while(exit)
     }
 
     /**获取游戏等级 */
@@ -52,7 +57,7 @@ export default class MainScene extends Laya.Script {
         for(let i=0;i<(this.GameLV+1+2);i++){
             for(let j=0;j<this.GameLV+1+2;j++){
                 cell = Laya.Pool.getItemByCreateFun("cellPrefab",this.cellPrefab.create,this.cellPrefab);
-                cell.getComponent(CellScript).Init(sn,i,j);
+                cell.getComponent(CellScript).Init(sn,i,j,this.LineNode.width/this.getGameLv());
                 sn++;
                 cell.x = this.configX * j;
                 cell.y = this.configY * i;

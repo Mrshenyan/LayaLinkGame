@@ -53,8 +53,7 @@ export default class CellScript extends Laya.Script {
      * 初始化游戏区域
      * @param sn the gem's sn
      */
-    public Init(sn:number,indexX,indexY):Laya.Node{
-        let self = this;
+    public Init(sn:number,indexX,indexY,width):Laya.Node{
         CellScript.CS_self = this;
         this.GemParent = this.owner.getChildByName("Panel");
         this.gemS = new Array<Laya.Image>();
@@ -79,6 +78,15 @@ export default class CellScript extends Laya.Script {
         return this.owner;
     }
 
+    setWH(width){
+        let node =<Laya.Sprite>this.owner;
+        node.width = width;
+        for(let i=0;i<node.numChildren;i++){
+            if(node.getComponent[i].numChildren>0){
+                
+            }
+        }
+    }
     btnCallBack(gemType,gemSN){
         if(this.getEliminateOrNot()){
             return;
