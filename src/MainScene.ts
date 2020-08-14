@@ -18,19 +18,15 @@ export default class MainScene extends Laya.Script {
         this.cretatGem();
     }
 
-    onEnable(): void {
-
-    }
-
-    onDisable(): void {
-    }
-
+    /**获取游戏等级 */
     getGameLv(){
         return this.GameLV;
     }
-
+    /**单元格width */
     configX = 100;
+    /**单元格height */
     configY = 100;
+    /**游戏区域生成函数 */
     cretatGem(){
         let cell:Laya.Image = null;
         this.GemContain
@@ -50,7 +46,7 @@ export default class MainScene extends Laya.Script {
             }
         }
     }
-    
+    /**消除函数 */
     static eliminate(sn1:number,sn2:number){
         let p1_Rootparent = MainScene.MS_self.gemS[sn1].parent.parent.parent
         let p2_Rootparent = MainScene.MS_self.gemS[sn2].parent.parent.parent
@@ -83,8 +79,11 @@ export default class MainScene extends Laya.Script {
         console.log("没有可以消除的");
         return false;
     }
-
-    cancleChioced(sn1,sn2){
+    /**取消选中函数
+     * @param sn1 选中的目标点1
+     * @param sn2 选中的目标点2
+     */
+    static cancleChioced(sn1,sn2){
         console.log("can not eliminate");
         let timer = new Laya.Timer();
         timer.once(500,this,()=>{

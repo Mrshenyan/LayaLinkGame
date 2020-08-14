@@ -3,12 +3,15 @@ import MainScene from "./MainScene";
 
 export default class CheckScript extends Laya.Script {
     
-    
+    /**目标点的序号 */
     private static theOne:number=-1;
     private static theTwo:number=-1;
+    /**目标点的类型 */
     private static type1:number = -1;
     private static type2:number = -1;
+    /**目标点1的pos（行列表示） */
     private static pos1:Laya.Vector2 = new Laya.Vector2(-1,-1);
+    /**目标点2的pos（行列表示）*/
     private static pos2:Laya.Vector2 = new Laya.Vector2(-1,-1);
     private static Instance:CheckScript = null;
     private static CS_self:CheckScript = null;
@@ -48,7 +51,7 @@ export default class CheckScript extends Laya.Script {
         let zhedian2
         if(type1!=type2&&(type1!=-1&&type2!=-1)){
             goCheck = false;
-            return MainScene.MS_self.cancleChioced(sn1,sn2);
+            return MainScene.cancleChioced(sn1,sn2);
         }
         if(sn1==-1||sn2==-1){
             return -1;

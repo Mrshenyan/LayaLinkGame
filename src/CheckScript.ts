@@ -48,7 +48,7 @@ export default class CheckScript extends Laya.Script {
         let zhedian2
         if(type1!=type2&&(type1!=-1&&type2!=-1)){
             goCheck = false;
-            return MainScene.MS_self.cancleChioced(sn1,sn2);
+            return MainScene.cancleChioced(sn1,sn2);
         }
         if(sn1==-1||sn2==-1){
             return -1;
@@ -327,6 +327,9 @@ export default class CheckScript extends Laya.Script {
         returnValue = this.Check(this.theOne,this.theTwo,this.type1,this.type2,this.pos1,this.pos2);
         return returnValue;
     }
+    /**
+     * 重置函数，重置必要参数
+     */
     public static reSet(){
         console.log("重置");
         this.theOne = this.theTwo = this.type1 = this.type2 = -1;
