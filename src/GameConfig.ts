@@ -17,8 +17,8 @@ export default class GameConfig{
     static alignH:string="left";
     static startScene:any="MainScene.scene";
     static sceneRoot:string="";
-    static debug:boolean=true;
-    static stat:boolean=true;
+    static debug:boolean=false;
+    static stat:boolean=false;
     static physicsDebug:boolean=true;
     static exportSceneToJson:boolean=true;
     constructor(){}

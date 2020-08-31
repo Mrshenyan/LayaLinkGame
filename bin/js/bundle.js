@@ -138,22 +138,24 @@
                let H_flag_L;
                let V_flag_r;
                MainScene.LINECONTRL = 0;
-               CheckScript.worker1.onmessage = function () {
-                   for (let i = pos1.y - 1; (i < pos1.y && i >= 0); i--) {
-                       if (MainScene.LINECONTRL == 0) {
-                           t1_Hfunc(i);
-                           t2_Hfunc(i);
+               for (let i = pos1.y - 1; (i < pos1.y && i >= 0); i--) {
+                   if (MainScene.LINECONTRL == 0) {
+                       if (i < 0 || i > CheckScript.GameLv) {
+                           return false;
                        }
+                       t1_Hfunc(i);
+                       t2_Hfunc(i);
                    }
-               };
-               CheckScript.worker2.onmessage = function () {
-                   for (let i = pos1.y + 1; (i > pos1.y && i < CheckScript.GameLv); i++) {
-                       if (MainScene.LINECONTRL == 0) {
-                           t1_Hfunc(i);
-                           t2_Hfunc(i);
+               }
+               for (let i = pos1.y + 1; (i > pos1.y && i < CheckScript.GameLv); i++) {
+                   if (MainScene.LINECONTRL == 0) {
+                       if (i < 0 || i > CheckScript.GameLv) {
+                           return false;
                        }
+                       t1_Hfunc(i);
+                       t2_Hfunc(i);
                    }
-               };
+               }
                return false;
                function t1_Hfunc(i) {
                    let HScanPos = new Laya.Vector2();
@@ -207,12 +209,18 @@
                MainScene.LINECONTRL = 0;
                for (let i = pos1.x - 1; (i < pos1.x && i >= 0); i--) {
                    if (MainScene.LINECONTRL == 0) {
+                       if (i < 0 || i > CheckScript.GameLv) {
+                           return false;
+                       }
                        t1_Vfunc(i);
                        t2_Vfunc(i);
                    }
                }
                for (let i = pos1.x + 1; (i > pos1.x && i < CheckScript.GameLv); i++) {
                    if (MainScene.LINECONTRL == 0) {
+                       if (i < 0 || i > CheckScript.GameLv) {
+                           return false;
+                       }
                        t1_Vfunc(i);
                        t2_Vfunc(i);
                    }
@@ -269,7 +277,7 @@
                CheckScript.Instance = new CheckScript();
                CheckScript.CS_self = CheckScript.Instance;
            }
-           CheckScript.GameLv = MainScene.MS_self.getGameLv() + 1 + 2;
+           CheckScript.GameLv = MainScene.MS_self.getGameLv();
            let returnValue = -1;
            if (this.theOne == -1) {
                this.theOne = sn;
@@ -299,8 +307,6 @@
    CheckScript.Instance = null;
    CheckScript.CS_self = null;
    CheckScript.GameLv = 0;
-   CheckScript.worker1 = new Worker("./ScanScript");
-   CheckScript.worker2 = new Worker("./ScanScript");
 
    class CellScript extends Laya.Script {
        constructor() {
@@ -340,11 +346,14 @@
        onDisable() {
        }
        Init(sn, indexX, indexY, width) {
+           let node = this.owner;
            CellScript.CS_self = this;
            this.GemParent = this.owner.getChildByName("Panel");
            this.gemS = new Array();
            this.chioced = this.owner.getChildByName("chioce");
            this.BtnClick = this.owner.getChildByName("btn_click");
+           node.set_scaleX(width / 160);
+           node.set_scaleY(width / 160);
            this.gemSN = sn;
            for (let i = 0; i < this.GemParent.numChildren; i++) {
                this.gemS.push(this.GemParent.getChildAt(i));
@@ -378,14 +387,17 @@
    class MainScene extends Laya.Script {
        constructor() {
            super();
-           this.GameLV = 5;
+           this.GameLV = 6;
            this.LineNode = null;
            this.CellType = [0, 0, 0, 0];
-           this.configX = 100;
-           this.configY = 100;
+           this.LineDetalPos = 80;
+           this.configX = 640 / this.GameLV;
+           this.configY = 640 / this.GameLV;
        }
        onAwake() {
            this.GemContain = this.owner.getChildByName("GemContain");
+           this.GemContain.width = 640;
+           this.GemContain.height = 640;
            MainScene.MS_self = this;
            MainScene.MS_self.gemS = new Array();
            this.LineNode = new Laya.Sprite();
@@ -395,14 +407,10 @@
            this.LineNode.height = 640;
            this.CellType = new Array(this.getGameLv() + 1);
            this.owner.addChild(this.LineNode);
-           let exit = false;
-           do {
-               this.cretatGem();
-               console.log(this.CellType);
-               for (let i = 0; i < MainScene.MS_self.CellType.length; i++) {
-                   exit = exit && (MainScene.MS_self.CellType[i] % 2 == 0);
-               }
-           } while (exit);
+           this.cretatGem();
+           let exit = true;
+           let exitCount;
+           this.cretatGem();
        }
        getGameLv() {
            return this.GameLV;
@@ -413,18 +421,21 @@
            for (let i = 0; i < this.CellType.length; i++) {
                this.CellType[i] = 0;
            }
+           if (this.GameLV < 3)
+               this.GameLV = 3;
+           if (this.GameLV % 2 != 0)
+               this.GameLV += 1;
            let cell = null;
            let sn = 0;
-           for (let i = 0; i < (this.GameLV + 1 + 2); i++) {
-               for (let j = 0; j < this.GameLV + 1 + 2; j++) {
+           this.LineDetalPos *= this.configX / 160;
+           for (let i = 0; i < (this.GameLV + 2); i++) {
+               for (let j = 0; j < (this.GameLV + 2); j++) {
                    cell = Laya.Pool.getItemByCreateFun("cellPrefab", this.cellPrefab.create, this.cellPrefab);
-                   cell.getComponent(CellScript).Init(sn, i, j, this.LineNode.width / this.getGameLv());
+                   cell.getComponent(CellScript).Init(sn, i, j, this.configY);
                    sn++;
                    cell.x = this.configX * j;
                    cell.y = this.configY * i;
-                   if (i == 0 || i == (this.GameLV + 2) || j == 0 || j == (this.GameLV + 2)) {
-                       cell.visible = false;
-                       cell.getComponent(CellScript).setEliminateOrNot(true);
+                   if (i == 0 || i == this.GameLV || j == 0 || j == this.GameLV) {
                    }
                    if (cell.visible) {
                        this.setCellType(cell.getComponent(CellScript).gemType);
@@ -481,31 +492,31 @@
        }
        DrawLine(start, end, arg1, arg2) {
            let startSp = this.GemContain.getChildAt(start);
-           let startPos = new Laya.Point(startSp.x + 49.5, startSp.y + 49.5);
+           let startPos = new Laya.Point(startSp.x + this.LineDetalPos, startSp.y + this.LineDetalPos);
            let endSp = this.GemContain.getChildAt(end);
            let endPos;
            if (arg1 && arg2) {
                let arg1Sp = this.GemContain.getChildAt(arg1);
-               let arg1Pos = new Laya.Point(arg1Sp.x + 49.5, arg1Sp.y + 49.5);
+               let arg1Pos = new Laya.Point(arg1Sp.x + this.LineDetalPos, arg1Sp.y + this.LineDetalPos);
                let arg2Sp = this.GemContain.getChildAt(arg2);
-               let arg2Pos = new Laya.Point(arg2Sp.x + 49.5, arg2Sp.y + 49.5);
+               let arg2Pos = new Laya.Point(arg2Sp.x + this.LineDetalPos, arg2Sp.y + this.LineDetalPos);
                console.log(arg1Pos);
                console.log(arg2Pos);
-               endPos = new Laya.Point(endSp.x + 49.5, endSp.y + 49.5);
+               endPos = new Laya.Point(endSp.x + this.LineDetalPos, endSp.y + this.LineDetalPos);
                this.LineNode.graphics.drawLine(startPos.x, startPos.y, arg1Pos.x, arg1Pos.y, "ff0000", 2);
                this.LineNode.graphics.drawLine(arg1Pos.x, arg1Pos.y, arg2Pos.x, arg2Pos.y, "ff0000", 2);
                this.LineNode.graphics.drawLine(arg2Pos.x, arg2Pos.y, endPos.x, endPos.y, "ff0000", 2);
            }
            else if (arg1 && !arg2) {
                let arg1Sp = this.GemContain.getChildAt(arg1);
-               let arg1Pos = new Laya.Point(arg1Sp.x + 49.5, arg1Sp.y + 49.5);
+               let arg1Pos = new Laya.Point(arg1Sp.x + this.LineDetalPos, arg1Sp.y + this.LineDetalPos);
                console.log(arg1Pos);
-               endPos = new Laya.Point(endSp.x + 49.5, endSp.y + 49.5);
+               endPos = new Laya.Point(endSp.x + this.LineDetalPos, endSp.y + this.LineDetalPos);
                this.LineNode.graphics.drawLine(startPos.x, startPos.y, arg1Pos.x, arg1Pos.y, "ff0000", 2);
                this.LineNode.graphics.drawLine(arg1Pos.x, arg1Pos.y, endPos.x, endPos.y, "ff0000", 2);
            }
            else {
-               endPos = new Laya.Point(endSp.x + 49.5, endSp.y + 49.5);
+               endPos = new Laya.Point(endSp.x + this.LineDetalPos, endSp.y + this.LineDetalPos);
                this.LineNode.graphics.drawLine(startPos.x, startPos.y, endPos.x, endPos.y, "ff0000", 2);
            }
            console.log(startPos);
@@ -519,24 +530,7 @@
            });
        }
        setCellType(type) {
-           switch (type) {
-               case 1: {
-                   this.CellType[0]++;
-                   break;
-               }
-               case 2: {
-                   this.CellType[1]++;
-                   break;
-               }
-               case 3: {
-                   this.CellType[2]++;
-                   break;
-               }
-               case 4: {
-                   this.CellType[3]++;
-                   break;
-               }
-           }
+           this.CellType[type - 1]++;
        }
    }
    MainScene.MS_self = null;
@@ -739,8 +733,8 @@
    GameConfig.alignH = "left";
    GameConfig.startScene = "MainScene.scene";
    GameConfig.sceneRoot = "";
-   GameConfig.debug = true;
-   GameConfig.stat = true;
+   GameConfig.debug = false;
+   GameConfig.stat = false;
    GameConfig.physicsDebug = true;
    GameConfig.exportSceneToJson = true;
    GameConfig.init();

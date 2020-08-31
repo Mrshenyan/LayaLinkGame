@@ -1,7 +1,5 @@
 import CellScript from "./CellScript";
 import MainScene from "./MainScene";
-import { posix } from "path";
-import { worker } from "cluster";
 
 export default class CheckScript extends Laya.Script {
     
@@ -19,8 +17,6 @@ export default class CheckScript extends Laya.Script {
     private static CS_self:CheckScript = null;
     /**关卡横向格子数 */
     private static GameLv =0;
-    public static worker1 = new Worker("./ScanScript"); 
-    public static worker2 = new Worker("./ScanScript"); 
    
     constructor() { super();
         // if(!CheckScript.Instance)CheckScript.Instance = new CheckScript();
@@ -225,21 +221,30 @@ export default class CheckScript extends Laya.Script {
             let H_flag_L;
             /**target1，target2拐点扫描对应点 */
             let V_flag_r;
-            MainScene.LINECONTRL=0;
-            CheckScript.worker1.onmessage = function(){
-                for(let i=pos1.y-1;(i<pos1.y&&i>=0);i--){
-                    if(MainScene.LINECONTRL==0){
-                        t1_Hfunc(i);
-                        t2_Hfunc(i);
+            MainScene.LINECONTRL=0
+            // for(let i=0;i<CheckScript.GameLv;i++){
+            //     let xx = pos1.y + Math.pow(-1,i)*i;
+            //     if(MainScene.LINECONTRL==0){
+            //         t1_Hfunc(xx);
+            //         t2_Hfunc(xx);
+            //     }
+            // }
+            for(let i=pos1.y-1;(i<pos1.y&&i>=0);i--){
+                if(MainScene.LINECONTRL==0){
+                    if(i<0||i>CheckScript.GameLv){
+                        return false;
                     }
+                    t1_Hfunc(i);
+                    t2_Hfunc(i);
                 }
             }
-            CheckScript.worker2.onmessage=function(){
-                for(let i=pos1.y+1;(i>pos1.y&&i<CheckScript.GameLv);i++){
-                    if(MainScene.LINECONTRL==0){
-                        t1_Hfunc(i);
-                        t2_Hfunc(i);
+            for(let i=pos1.y+1;(i>pos1.y&&i<CheckScript.GameLv);i++){
+                if(MainScene.LINECONTRL==0){
+                    if(i<0||i>CheckScript.GameLv){
+                        return false;
                     }
+                    t1_Hfunc(i);
+                    t2_Hfunc(i);
                 }
             }
             return false;
@@ -305,20 +310,33 @@ export default class CheckScript extends Laya.Script {
             let H_flag_L;
             let V_flag_r;
             MainScene.LINECONTRL=0
+            // for(let i=0;i<CheckScript.GameLv;i++){
+            //     let xx = pos1.x + Math.pow(-1,i)*i;
+            //     if(MainScene.LINECONTRL==0){
+            //         t1_Vfunc(i);
+            //         t2_Vfunc(i);
+            //     }
+            // }
             for(let i=pos1.x-1;(i<pos1.x&&i>=0);i--){
                 if(MainScene.LINECONTRL==0){
+                    if(i<0||i>CheckScript.GameLv){
+                        return false;
+                    }
                     t1_Vfunc(i);
                     t2_Vfunc(i);
                 }
             }
             for(let i=pos1.x+1;(i>pos1.x&&i<CheckScript.GameLv);i++){
                 if(MainScene.LINECONTRL==0){
+                    if(i<0||i>CheckScript.GameLv){
+                        return false;
+                    }
                     t1_Vfunc(i);
                     t2_Vfunc(i);
                 }        
             }
             return false;
-            function t1_Vfunc(i){
+            function t1_Vfunc(i){//扫描函数需要优化
                 let VScanPos:Laya.Vector2=new Laya.Vector2();
                 let VSSN:number=pos1.y + i*CheckScript.GameLv
                 VScanNode = MainScene.MS_self.GemContain.getChildAt(VSSN);
@@ -374,7 +392,7 @@ export default class CheckScript extends Laya.Script {
             CheckScript.Instance = new CheckScript();
             CheckScript.CS_self =  CheckScript.Instance ;
         }
-        CheckScript.GameLv = MainScene.MS_self.getGameLv()+1+2
+        CheckScript.GameLv = MainScene.MS_self.getGameLv()//+1+2
         let returnValue = -1;
         if(this.theOne==-1){
             this.theOne = sn;

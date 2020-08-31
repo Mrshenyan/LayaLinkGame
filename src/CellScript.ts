@@ -54,11 +54,14 @@ export default class CellScript extends Laya.Script {
      * @param sn the gem's sn
      */
     public Init(sn:number,indexX,indexY,width):Laya.Node{
+        let node =<Laya.Sprite>this.owner;
         CellScript.CS_self = this;
         this.GemParent = this.owner.getChildByName("Panel");
         this.gemS = new Array<Laya.Image>();
         this.chioced = <Laya.Image>this.owner.getChildByName("chioce");
         this.BtnClick = <Laya.Button>this.owner.getChildByName("btn_click");
+        node.set_scaleX(width/160);
+        node.set_scaleY(width/160);
         this.gemSN = sn;
         for(let i=0;i<this.GemParent.numChildren;i++){
             this.gemS.push(<Laya.Image>this.GemParent.getChildAt(i));
@@ -78,15 +81,6 @@ export default class CellScript extends Laya.Script {
         return this.owner;
     }
 
-    setWH(width){
-        let node =<Laya.Sprite>this.owner;
-        node.width = width;
-        for(let i=0;i<node.numChildren;i++){
-            if(node.getComponent[i].numChildren>0){
-                
-            }
-        }
-    }
     btnCallBack(gemType,gemSN){
         if(this.getEliminateOrNot()){
             return;

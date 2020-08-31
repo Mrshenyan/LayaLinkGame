@@ -1,12 +1,11 @@
 import CellScript from "./CellScript";
 import CheckScript_1 from "./CheckScript_1";
-import { time } from "console";
 
 export default class MainScene extends Laya.Script {
     GemContain:Laya.Panel;
     /** @prop {name:cellPrefab,tips:"宝石预制体对象",type:Prefab} */
     cellPrefab :Laya.Prefab;
-    private GameLV:number =5;
+    private GameLV:number=6;
     constructor() { super(); }
     static MS_self:MainScene = null;
     public gemS:Array<Laya.Image>;
@@ -16,8 +15,11 @@ export default class MainScene extends Laya.Script {
     private CellType=[0,0,0,0];
     /**已经找到的路径数，只允许等于1，0 */
     public static LINECONTRL = 0;
+    private LineDetalPos = 80;
     onAwake():void{
         this.GemContain = <Laya.Panel>this.owner.getChildByName("GemContain");
+        this.GemContain.width=640;
+        this.GemContain.height=640;
         MainScene.MS_self = this;
         MainScene.MS_self.gemS = new Array<Laya.Image>();
         this.LineNode = new Laya.Sprite();
@@ -27,14 +29,30 @@ export default class MainScene extends Laya.Script {
         this.LineNode.height = 640;
         this.CellType = new Array(this.getGameLv()+1);
         this.owner.addChild(this.LineNode);
-        let exit=false;
-        do{        
-            this.cretatGem();
-            console.log(this.CellType);
-            for(let i=0;i<MainScene.MS_self.CellType.length;i++){
-                exit = exit&&(MainScene.MS_self.CellType[i]%2==0);
-            }
-        } while(exit)
+
+        this.cretatGem();
+
+        let exit=true;
+        let exitCount;
+        this.cretatGem();
+        // do{        
+        //     this.cretatGem();
+        //     console.log(this.CellType);
+        //     let evenCount=0;
+        //     for(let i=0;i<MainScene.MS_self.CellType.length;i++){
+        //         if(MainScene.MS_self.CellType[i]%2==0){
+        //             evenCount++;
+        //         }
+        //     }
+        //     exit = evenCount==MainScene.MS_self.CellType.length;
+        //     console.log(exit,"3");
+        //     if(exitCount>5){
+        //         exit=true;
+        //         for(let i=0;i<MainScene.MS_self.CellType.length;i++){
+        //             MainScene.MS_self.CellType[i]=this.GameLV;
+        //         }
+        //     }
+        // } while(!exit)
     }
 
     /**获取游戏等级 */
@@ -42,9 +60,9 @@ export default class MainScene extends Laya.Script {
         return this.GameLV;
     }
     /**单元格width */
-    configX = 100;
+    configX = 640/this.GameLV;
     /**单元格height */
-    configY = 100;
+    configY = 640/this.GameLV;
     /**游戏区域生成函数 */
     cretatGem(){
         this.GemContain.removeChildren();
@@ -52,19 +70,22 @@ export default class MainScene extends Laya.Script {
         for(let i=0;i<this.CellType.length;i++){
             this.CellType[i]=0;
         }
+        if(this.GameLV<3)this.GameLV=3;
+        if(this.GameLV%2!=0)this.GameLV+=1;
         let cell:Laya.Image = null;
         let sn = 0;
-        for(let i=0;i<(this.GameLV+1+2);i++){
-            for(let j=0;j<this.GameLV+1+2;j++){
+        this.LineDetalPos *= this.configX/160;
+        for(let i=0;i<(this.GameLV+2);i++){//创建过程需要优化
+            for(let j=0;j<(this.GameLV+2);j++){
                 cell = Laya.Pool.getItemByCreateFun("cellPrefab",this.cellPrefab.create,this.cellPrefab);
-                cell.getComponent(CellScript).Init(sn,i,j,this.LineNode.width/this.getGameLv());
+                cell.getComponent(CellScript).Init(sn,i,j,this.configY);
                 sn++;
                 cell.x = this.configX * j;
                 cell.y = this.configY * i;
-                if(i==0||i==(this.GameLV+2)||j==0||j==(this.GameLV+2)){
-                    cell.visible = false;
-                    cell.getComponent(CellScript).setEliminateOrNot(true);
-                }
+                // if(i==0||i==this.GameLV||j==0||j==this.GameLV){
+                //     // cell.visible = false;
+                //     // cell.getComponent(CellScript).setEliminateOrNot(true);
+                // }
                 if(cell.visible){
                     this.setCellType(cell.getComponent(CellScript).gemType);
                 }
@@ -134,31 +155,31 @@ export default class MainScene extends Laya.Script {
      */
     public DrawLine(start,end,arg1?,arg2?){
         let startSp = <Laya.Sprite>this.GemContain.getChildAt(start);
-        let startPos = new Laya.Point(startSp.x+49.5,startSp.y+49.5);
+        let startPos = new Laya.Point(startSp.x+this.LineDetalPos,startSp.y+this.LineDetalPos);
         let endSp = <Laya.Sprite>this.GemContain.getChildAt(end);
         let endPos:Laya.Point;
         if(arg1&&arg2){
             let arg1Sp = <Laya.Sprite>this.GemContain.getChildAt(arg1);
-            let arg1Pos =   new Laya.Point(arg1Sp.x+49.5,arg1Sp.y+49.5);
+            let arg1Pos =   new Laya.Point(arg1Sp.x+this.LineDetalPos,arg1Sp.y+this.LineDetalPos);
             let arg2Sp = <Laya.Sprite>this.GemContain.getChildAt(arg2);
-            let arg2Pos =   new Laya.Point(arg2Sp.x+49.5,arg2Sp.y+49.5);
+            let arg2Pos =   new Laya.Point(arg2Sp.x+this.LineDetalPos,arg2Sp.y+this.LineDetalPos);
             console.log(arg1Pos)
             console.log(arg2Pos)
-            endPos = new Laya.Point(endSp.x+49.5,endSp.y+49.5);
+            endPos = new Laya.Point(endSp.x+this.LineDetalPos,endSp.y+this.LineDetalPos);
 
             this.LineNode.graphics.drawLine(startPos.x,startPos.y,arg1Pos.x,arg1Pos.y,"ff0000",2);//使用drawLines不知道为什么会画的线不是预期，参数3是起点坐标的相对值。
             this.LineNode.graphics.drawLine(arg1Pos.x,arg1Pos.y,arg2Pos.x,arg2Pos.y,"ff0000",2);
             this.LineNode.graphics.drawLine(arg2Pos.x,arg2Pos.y,endPos.x,endPos.y,"ff0000",2);
         }else if(arg1&&!arg2){
             let arg1Sp = <Laya.Sprite>this.GemContain.getChildAt(arg1);
-            let arg1Pos =   new Laya.Point(arg1Sp.x+49.5,arg1Sp.y+49.5);
+            let arg1Pos =   new Laya.Point(arg1Sp.x+this.LineDetalPos,arg1Sp.y+this.LineDetalPos);
             console.log(arg1Pos)
-            endPos = new Laya.Point(endSp.x+49.5,endSp.y+49.5);
+            endPos = new Laya.Point(endSp.x+this.LineDetalPos,endSp.y+this.LineDetalPos);
             this.LineNode.graphics.drawLine(startPos.x,startPos.y,arg1Pos.x,arg1Pos.y,"ff0000",2);
             this.LineNode.graphics.drawLine(arg1Pos.x,arg1Pos.y,endPos.x,endPos.y,"ff0000",2);
         }
         else{
-            endPos = new Laya.Point(endSp.x+49.5,endSp.y+49.5);
+            endPos = new Laya.Point(endSp.x+this.LineDetalPos,endSp.y+this.LineDetalPos);
             this.LineNode.graphics.drawLine(startPos.x,startPos.y,endPos.x,endPos.y,"ff0000",2);
         }
         console.log(startPos)
@@ -175,23 +196,6 @@ export default class MainScene extends Laya.Script {
 
 
     setCellType(type){
-        switch(type){
-            case 1:{
-                this.CellType[0]++;
-                break;
-            }
-            case 2:{
-                this.CellType[1]++;
-                break;
-            }
-            case 3:{
-                this.CellType[2]++;
-                break;
-            }
-            case 4:{
-                this.CellType[3]++;
-                break;
-            }
-        }
+        this.CellType[type-1]++;
     }
 }
